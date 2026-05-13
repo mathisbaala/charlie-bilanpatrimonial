@@ -12,6 +12,7 @@ import { RevenusSection } from '@/components/sections/RevenusSection'
 import { FiscaliteSection } from '@/components/sections/FiscaliteSection'
 import { ProfilRisqueSection } from '@/components/sections/ProfilRisqueSection'
 import { ObjectifsSection } from '@/components/sections/ObjectifsSection'
+import { CabinetModal } from '@/components/layout/CabinetModal'
 
 export default function HomePage() {
   const { activeSection, resetBilan } = useBilan()
@@ -37,16 +38,7 @@ export default function HomePage() {
           {sections[activeSection]}
         </div>
       </main>
-      {/* Cabinet modal placeholder */}
-      {cabinetOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setCabinetOpen(false)}>
-          <div className="bg-surface-1 rounded-2xl p-8 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h2 className="font-serif text-xl text-ink-950 mb-4">Paramètres cabinet</h2>
-            <p className="text-ink-600 text-sm">En construction...</p>
-            <button onClick={() => setCabinetOpen(false)} className="mt-4 text-sm text-ink-600 hover:text-ink-800">Fermer</button>
-          </div>
-        </div>
-      )}
+      <CabinetModal isOpen={cabinetOpen} onClose={() => setCabinetOpen(false)} />
     </div>
   )
 }
