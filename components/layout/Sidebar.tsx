@@ -8,6 +8,12 @@ import {
   User, Users, Building2, CreditCard, TrendingUp,
   Calculator, Shield, Target, Settings
 } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+const PDFButton = dynamic(
+  () => import('@/components/pdf/PDFButton').then(m => m.PDFButton),
+  { ssr: false, loading: () => null }
+)
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ReactNode; getProgress: (bilan: any) => number }[] = [
   {
@@ -104,10 +110,11 @@ export function Sidebar({ onOpenCabinet }: { onOpenCabinet: () => void }) {
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
+              style={{ borderLeftColor: isActive ? '#C09F65' : 'transparent' }}
               className={`
-                w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-150
+                w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-150 border-l-2
                 ${isActive
-                  ? 'bg-white/10 text-white'
+                  ? 'bg-white/10 text-white pl-[14px]'
                   : 'text-white/60 hover:text-white/80 hover:bg-white/5'
                 }
               `}
@@ -156,9 +163,7 @@ export function Sidebar({ onOpenCabinet }: { onOpenCabinet: () => void }) {
           <Settings size={14} />
           <span>Paramètres cabinet</span>
         </button>
-        <div id="pdf-button-portal" className="w-full">
-          {/* PDF button will be rendered here by PDFButton component */}
-        </div>
+        <PDFButton />
       </div>
     </aside>
   )
