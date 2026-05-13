@@ -6,6 +6,8 @@ import { Header } from '@/components/layout/Header'
 import { useBilan } from '@/context/BilanContext'
 import { IdentiteSection } from '@/components/sections/IdentiteSection'
 import { FamilialeSection } from '@/components/sections/FamilialeSection'
+import { ActifSection } from '@/components/sections/ActifSection'
+import { PassifSection } from '@/components/sections/PassifSection'
 
 // Section placeholders (will be replaced in next task)
 function SectionPlaceholder({ title }: { title: string }) {
@@ -23,8 +25,8 @@ export default function HomePage() {
   const sections: Record<string, React.ReactNode> = {
     identite: <IdentiteSection />,
     familiale: <FamilialeSection />,
-    actif: <SectionPlaceholder title="Actif" />,
-    passif: <SectionPlaceholder title="Passif" />,
+    actif: <ActifSection />,
+    passif: <PassifSection />,
     revenus: <SectionPlaceholder title="Revenus & Charges" />,
     fiscalite: <SectionPlaceholder title="Fiscalité" />,
     profil_risque: <SectionPlaceholder title="Profil de risque" />,
