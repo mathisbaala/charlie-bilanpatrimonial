@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { useBilan } from '@/context/BilanContext'
+import { IdentiteSection } from '@/components/sections/IdentiteSection'
+import { FamilialeSection } from '@/components/sections/FamilialeSection'
 
 // Section placeholders (will be replaced in next task)
 function SectionPlaceholder({ title }: { title: string }) {
@@ -19,8 +21,8 @@ export default function HomePage() {
   const [cabinetOpen, setCabinetOpen] = useState(false)
 
   const sections: Record<string, React.ReactNode> = {
-    identite: <SectionPlaceholder title="Identité & Situation" />,
-    familiale: <SectionPlaceholder title="Situation familiale" />,
+    identite: <IdentiteSection />,
+    familiale: <FamilialeSection />,
     actif: <SectionPlaceholder title="Actif" />,
     passif: <SectionPlaceholder title="Passif" />,
     revenus: <SectionPlaceholder title="Revenus & Charges" />,
