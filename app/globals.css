@@ -1,26 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Surface colors */
+  --color-surface-0: #F5F4F0;
+  --color-surface-1: #FFFFFF;
+  --color-surface-2: #EFEDE8;
+  --color-surface-3: #E8E6E0;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Ink colors */
+  --color-ink-950: #0A0A09;
+  --color-ink-800: #242420;
+  --color-ink-600: #55554F;
+  --color-ink-400: #8E8D87;
+  --color-ink-200: #C9C7BF;
+  --color-ink-100: #E0DED7;
+  --color-ink-50: #ECEAE4;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Navy colors */
+  --color-navy-950: #040E1C;
+  --color-navy-900: #081828;
+  --color-navy-800: #0F2844;
+  --color-navy-700: #163A5E;
+  --color-navy-600: #1E4D7A;
+  --color-navy-500: #275F94;
+  --color-navy-200: #A8C4DE;
+  --color-navy-100: #D4E2EF;
+  --color-navy-50: #EEF4FA;
+
+  /* Gold colors */
+  --color-gold-600: #8C6F34;
+  --color-gold-500: #A8874A;
+  --color-gold-400: #C09F65;
+  --color-gold-100: #F2E8D4;
+  --color-gold-50: #FAF4E8;
+
+  /* Positive colors */
+  --color-pos-800: #0C3B26;
+  --color-pos-700: #175C3C;
+  --color-pos-600: #1E7A4F;
+  --color-pos-500: #269163;
+  --color-pos-100: #E4F2EC;
+  --color-pos-50: #F1F9F5;
+
+  /* Negative colors */
+  --color-neg-800: #4D0E17;
+  --color-neg-700: #731623;
+  --color-neg-600: #952033;
+  --color-neg-500: #B52D42;
+  --color-neg-100: #F4E6E9;
+  --color-neg-50: #FAF2F3;
+
+  /* Font families */
+  --font-serif: "DM Serif Display", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  background-color: #F5F4F0;
+  color: #242420;
 }
