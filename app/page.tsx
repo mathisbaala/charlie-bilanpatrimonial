@@ -8,15 +8,10 @@ import { IdentiteSection } from '@/components/sections/IdentiteSection'
 import { FamilialeSection } from '@/components/sections/FamilialeSection'
 import { ActifSection } from '@/components/sections/ActifSection'
 import { PassifSection } from '@/components/sections/PassifSection'
-
-// Section placeholders (will be replaced in next task)
-function SectionPlaceholder({ title }: { title: string }) {
-  return (
-    <div className="flex items-center justify-center h-64 rounded-xl border-2 border-dashed border-ink-200">
-      <p className="text-ink-400 font-serif text-xl">{title} — en construction</p>
-    </div>
-  )
-}
+import { RevenusSection } from '@/components/sections/RevenusSection'
+import { FiscaliteSection } from '@/components/sections/FiscaliteSection'
+import { ProfilRisqueSection } from '@/components/sections/ProfilRisqueSection'
+import { ObjectifsSection } from '@/components/sections/ObjectifsSection'
 
 export default function HomePage() {
   const { activeSection, resetBilan } = useBilan()
@@ -27,10 +22,10 @@ export default function HomePage() {
     familiale: <FamilialeSection />,
     actif: <ActifSection />,
     passif: <PassifSection />,
-    revenus: <SectionPlaceholder title="Revenus & Charges" />,
-    fiscalite: <SectionPlaceholder title="Fiscalité" />,
-    profil_risque: <SectionPlaceholder title="Profil de risque" />,
-    objectifs: <SectionPlaceholder title="Objectifs patrimoniaux" />,
+    revenus: <RevenusSection />,
+    fiscalite: <FiscaliteSection />,
+    profil_risque: <ProfilRisqueSection />,
+    objectifs: <ObjectifsSection />,
   }
 
   return (
