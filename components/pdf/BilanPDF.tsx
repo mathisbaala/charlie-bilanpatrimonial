@@ -33,9 +33,9 @@ const C = {
 const s = StyleSheet.create({
   page: {
     backgroundColor: C.PARCHMENT,
-    paddingHorizontal: 48,
-    paddingTop: 40,
-    paddingBottom: 44,
+    paddingHorizontal: 44,
+    paddingTop: 32,
+    paddingBottom: 36,
     fontFamily: 'Helvetica',
   },
   coverPage: {
@@ -121,7 +121,7 @@ const s = StyleSheet.create({
   },
   tableRow: {
     flexDirection: 'row',
-    paddingVertical: 8,
+    paddingVertical: 5,
     borderBottomWidth: 0.5,
     borderBottomColor: C.BORDER,
   },
@@ -130,7 +130,7 @@ const s = StyleSheet.create({
   tableValue: { flex: 1, fontSize: 9.5, color: C.INK, textAlign: 'right' },
   tableTotal: {
     flexDirection: 'row',
-    paddingVertical: 9,
+    paddingVertical: 6,
     borderTopWidth: 1,
     borderTopColor: C.INK_MED,
     marginTop: 2,
@@ -206,7 +206,7 @@ function SectionHeading({ num, slug, title, subtitle }: {
   num: string; slug: string; title: string; subtitle?: string
 }) {
   return (
-    <View style={{ marginBottom: 20 }}>
+    <View style={{ marginBottom: 14 }}>
       <Text style={s.sectionLabel}>
         <Text style={{ color: C.GOLD }}>{num}</Text>{' · '}{slug.toUpperCase()}
       </Text>
@@ -356,7 +356,7 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
       <SectionHeading num="01" slug="Identité &amp; Situation" title="Identité &amp; Situation personnelle" />
 
       {/* Informations personnelles */}
-      <View style={{ marginBottom: 20 }}>
+      <View style={{ marginBottom: 14 }}>
         <Text style={s.subLabel}>INFORMATIONS PERSONNELLES</Text>
         <View style={s.table}>
           <View style={s.tableHead}>
@@ -380,7 +380,7 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
 
       {/* Conjoint */}
       {conjoint && conjointRows.length > 0 && (
-        <View style={{ marginBottom: 20 }}>
+        <View style={{ marginBottom: 14 }}>
           <Text style={s.subLabel}>CONJOINT / PARTENAIRE</Text>
           <View style={s.table}>
             {conjointRows.map(([label, value], i) => (
@@ -395,7 +395,7 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
 
       {/* Enfants */}
       {fam.enfants.length > 0 && (
-        <View style={{ marginBottom: 20 }}>
+        <View style={{ marginBottom: 14 }}>
           <Text style={s.subLabel}>COMPOSITION DU FOYER</Text>
           <View style={s.table}>
             {fam.enfants.map((e, i) => (
@@ -410,7 +410,7 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
 
       {/* Donations */}
       {fam.donations.length > 0 && (
-        <View style={{ marginBottom: 20 }}>
+        <View style={{ marginBottom: 14 }}>
           <Text style={s.subLabel}>DONATIONS ANTÉRIEURES</Text>
           {fam.donations.map((don, i) => {
             const donTypeLabel: Record<string, string> = {
@@ -429,7 +429,7 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
 
       {/* Testament */}
       {fam.hasTestament && (
-        <View style={{ marginBottom: 12 }}>
+        <View style={{ marginBottom: 8 }}>
           <Text style={s.subLabel}>TESTAMENT</Text>
           <Text style={{ fontSize: 9.5, color: C.INK }}>
             {fam.typeTestament === 'authentique' ? 'Authentique (notarié)' : 'Olographe (manuscrit)'}
@@ -439,18 +439,51 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
       )}
 
       {fam.commentairesFamiliaux ? (
-        <View style={s.callout}>
-          <Text style={s.calloutLabel}>COMMENTAIRES</Text>
-          <Text style={s.calloutText}>{fam.commentairesFamiliaux}</Text>
+        <View style={{ marginBottom: 0 }}>
+          <Text style={{ ...s.subLabel, marginBottom: 4 }}>COMMENTAIRES</Text>
+          <Text style={{ fontSize: 9.5, color: C.INK, lineHeight: 1.5 }}>{fam.commentairesFamiliaux}</Text>
         </View>
       ) : null}
     </Page>
   )
 }
 
-// ─── Bilan Actif / Passif ─────────────────────────────────────────────────────
-function BilanPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
+
+// ─── Bilan Actif + Passif + Répartition ──────────────────────────────────────
+function BilanActifPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
+
+  // Pie chart helpers
+  const totalActif = calc.totalActif
+  const immoRatio = totalActif > 0 ? calc.totalActifImmobilier / totalActif : 0
+  const finRatio  = totalActif > 0 ? calc.totalActifFinancier  / totalActif : 0
+  const proRatio  = totalActif > 0 ? calc.totalActifProfessionnel / totalActif : 0
+
+  function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
+    const rad = ((deg - 90) * Math.PI) / 180
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
+  }
+  function arc(cx: number, cy: number, r: number, start: number, end: number) {
+    if (end - start >= 360) end = 359.99
+    const s2 = polarToCartesian(cx, cy, r, start)
+    const e  = polarToCartesian(cx, cy, r, end)
+    const large = end - start > 180 ? 1 : 0
+    return `M ${cx} ${cy} L ${s2.x} ${s2.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y} Z`
+  }
+
+  const segments = [
+    { ratio: immoRatio, color: C.FOREST,    label: 'Immobilier',    amount: calc.totalActifImmobilier },
+    { ratio: finRatio,  color: C.GOLD,      label: 'Financier',     amount: calc.totalActifFinancier },
+    { ratio: proRatio,  color: C.INK_LIGHT, label: 'Professionnel', amount: calc.totalActifProfessionnel },
+  ].filter(seg => seg.ratio > 0)
+
+  let deg = 0
+  const pieSegments = segments.map(seg => {
+    const start = deg
+    const end = deg + seg.ratio * 360
+    deg = end
+    return { ...seg, path: arc(50, 50, 40, start, end) }
+  })
 
   return (
     <Page size="A4" style={s.page}>
@@ -483,156 +516,154 @@ function BilanPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalc
 
       {/* Plus-value latente */}
       {calc.plusValueLatenteTotale !== 0 && (
-        <View style={{ marginBottom: 16, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 0.5, borderColor: calc.plusValueLatenteTotale >= 0 ? C.FOREST : C.NEG, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={{ marginBottom: 14, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: calc.plusValueLatenteTotale >= 0 ? C.FOREST : C.NEG, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text style={{ fontSize: 8, color: C.INK_MED, letterSpacing: 0.8 }}>PLUS-VALUE LATENTE IMMOBILIÈRE</Text>
           <Text style={{ fontFamily: 'Times-Roman', fontSize: 16, color: calc.plusValueLatenteTotale >= 0 ? C.POS : C.NEG }}>{fmtEur(calc.plusValueLatenteTotale)}</Text>
         </View>
       )}
 
-      {/* Actif table */}
-      <View style={{ marginBottom: 18 }}>
-        <Text style={s.subLabel}>ACTIF</Text>
-        <View style={s.table}>
-          <View style={s.tableHead}>
-            <Text style={{ ...s.tableHeadCell, flex: 2 }}>POSTE</Text>
-            <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>VALEUR ESTIMÉE</Text>
-          </View>
+      {/* Actif + Passif side by side */}
+      <View style={{ flexDirection: 'row', gap: 20, marginBottom: 16 }}>
 
-          {bilan.actif.immobilier.length > 0 && (
-            <>
-              <View style={{ ...s.tableRow, borderBottomWidth: 0 }}>
-                <Text style={{ flex: 2, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 0.8, paddingTop: 8 }}>IMMOBILIER</Text>
-                <Text style={{ flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, textAlign: 'right', paddingTop: 8 }}>{fmtEur(calc.totalActifImmobilier)}</Text>
-              </View>
-              {bilan.actif.immobilier.map((bien) => {
-                const pv = bien.prixAcquisition > 0 ? bien.valeurEstimee - bien.prixAcquisition : null
-                const isLocatif = ['locatif_nu', 'locatif_meuble', 'lmnp'].includes(bien.type)
-                const rendement = isLocatif && bien.loyerMensuel > 0 && bien.valeurEstimee > 0
-                  ? ((bien.loyerMensuel * 12 / bien.valeurEstimee) * 100).toFixed(1) + ' %'
-                  : null
-                const meta: string[] = []
-                if (pv !== null) meta.push(`PV : ${fmtEur(pv)}`)
-                if (rendement) meta.push(`Rend. : ${rendement}`)
-                return (
-                  <View key={bien.id} style={s.tableRow}>
-                    <View style={{ flex: 2 }}>
-                      <Text style={s.tableLabel}>{bien.libelle || bien.type}</Text>
-                      {meta.length > 0 && (
-                        <Text style={{ fontSize: 7.5, color: C.INK_LIGHT, marginTop: 2 }}>{meta.join('  ·  ')}</Text>
-                      )}
+        {/* Actif table */}
+        <View style={{ flex: 3 }}>
+          <Text style={s.subLabel}>ACTIF</Text>
+          <View style={s.table}>
+            <View style={s.tableHead}>
+              <Text style={{ ...s.tableHeadCell, flex: 2 }}>POSTE</Text>
+              <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>VALEUR</Text>
+            </View>
+
+            {bilan.actif.immobilier.length > 0 && (
+              <>
+                <View style={{ ...s.tableRow, borderBottomWidth: 0 }}>
+                  <Text style={{ flex: 2, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 0.8, paddingTop: 6 }}>IMMOBILIER</Text>
+                  <Text style={{ flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, textAlign: 'right', paddingTop: 6 }}>{fmtEur(calc.totalActifImmobilier)}</Text>
+                </View>
+                {bilan.actif.immobilier.map((bien) => {
+                  const pv = bien.prixAcquisition > 0 ? bien.valeurEstimee - bien.prixAcquisition : null
+                  const isLocatif = ['locatif_nu', 'locatif_meuble', 'lmnp'].includes(bien.type)
+                  const rendement = isLocatif && bien.loyerMensuel > 0 && bien.valeurEstimee > 0
+                    ? ((bien.loyerMensuel * 12 / bien.valeurEstimee) * 100).toFixed(1) + ' %'
+                    : null
+                  const meta: string[] = []
+                  if (pv !== null) meta.push(`PV : ${fmtEur(pv)}`)
+                  if (rendement) meta.push(`Rend. : ${rendement}`)
+                  return (
+                    <View key={bien.id} style={s.tableRow}>
+                      <View style={{ flex: 2 }}>
+                        <Text style={s.tableLabel}>{bien.libelle || bien.type}</Text>
+                        {meta.length > 0 && (
+                          <Text style={{ fontSize: 7.5, color: C.INK_LIGHT, marginTop: 2 }}>{meta.join('  ·  ')}</Text>
+                        )}
+                      </View>
+                      <Text style={s.tableValue}>{fmtEur(bien.valeurEstimee)}</Text>
                     </View>
-                    <Text style={s.tableValue}>{fmtEur(bien.valeurEstimee)}</Text>
+                  )
+                })}
+              </>
+            )}
+
+            {bilan.actif.financier.length > 0 && (
+              <>
+                <View style={{ ...s.tableRow, borderBottomWidth: 0 }}>
+                  <Text style={{ flex: 2, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 0.8, paddingTop: 6 }}>FINANCIER</Text>
+                  <Text style={{ flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, textAlign: 'right', paddingTop: 6 }}>{fmtEur(calc.totalActifFinancier)}</Text>
+                </View>
+                {bilan.actif.financier.map((fin) => (
+                  <View key={fin.id} style={s.tableRow}>
+                    <Text style={s.tableLabel}>{fin.libelle || fin.type}{fin.etablissement ? ` — ${fin.etablissement}` : ''}</Text>
+                    <Text style={s.tableValue}>{fmtEur(fin.valeur)}</Text>
                   </View>
-                )
-              })}
-            </>
-          )}
+                ))}
+              </>
+            )}
 
-          {bilan.actif.financier.length > 0 && (
-            <>
-              <View style={{ ...s.tableRow, borderBottomWidth: 0 }}>
-                <Text style={{ flex: 2, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 0.8, paddingTop: 8 }}>FINANCIER</Text>
-                <Text style={{ flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, textAlign: 'right', paddingTop: 8 }}>{fmtEur(calc.totalActifFinancier)}</Text>
-              </View>
-              {bilan.actif.financier.map((fin) => (
-                <View key={fin.id} style={s.tableRow}>
-                  <Text style={s.tableLabel}>{fin.libelle || fin.type}{fin.etablissement ? ` — ${fin.etablissement}` : ''}</Text>
-                  <Text style={s.tableValue}>{fmtEur(fin.valeur)}</Text>
+            {bilan.actif.professionnel.length > 0 && (
+              <>
+                <View style={{ ...s.tableRow, borderBottomWidth: 0 }}>
+                  <Text style={{ flex: 2, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 0.8, paddingTop: 6 }}>PROFESSIONNEL</Text>
+                  <Text style={{ flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, textAlign: 'right', paddingTop: 6 }}>{fmtEur(calc.totalActifProfessionnel)}</Text>
                 </View>
-              ))}
-            </>
-          )}
+                {bilan.actif.professionnel.map((pro) => (
+                  <View key={pro.id} style={s.tableRow}>
+                    <Text style={s.tableLabel}>{pro.libelle}{pro.pourcentageDetention ? ` (${pro.pourcentageDetention} %)` : ''}</Text>
+                    <Text style={s.tableValue}>{fmtEur(pro.valeurEstimee)}</Text>
+                  </View>
+                ))}
+              </>
+            )}
 
-          {bilan.actif.professionnel.length > 0 && (
-            <>
-              <View style={{ ...s.tableRow, borderBottomWidth: 0 }}>
-                <Text style={{ flex: 2, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 0.8, paddingTop: 8 }}>PROFESSIONNEL</Text>
-                <Text style={{ flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, textAlign: 'right', paddingTop: 8 }}>{fmtEur(calc.totalActifProfessionnel)}</Text>
-              </View>
-              {bilan.actif.professionnel.map((pro) => (
-                <View key={pro.id} style={s.tableRow}>
-                  <Text style={s.tableLabel}>{pro.libelle}{pro.pourcentageDetention ? ` (${pro.pourcentageDetention} %)` : ''}</Text>
-                  <Text style={s.tableValue}>{fmtEur(pro.valeurEstimee)}</Text>
-                </View>
-              ))}
-            </>
-          )}
-
-          <View style={s.tableTotal}>
-            <Text style={{ flex: 2, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.INK }}>Total Actif</Text>
-            <Text style={{ flex: 1, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.INK, textAlign: 'right' }}>{fmtEur(calc.totalActif)}</Text>
+            <View style={s.tableTotal}>
+              <Text style={{ flex: 2, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.INK }}>Total Actif</Text>
+              <Text style={{ flex: 1, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.INK, textAlign: 'right' }}>{fmtEur(calc.totalActif)}</Text>
+            </View>
           </View>
+        </View>
+
+        {/* Passif table + pie chart */}
+        <View style={{ flex: 2 }}>
+          <Text style={s.subLabel}>PASSIF</Text>
+          <View style={{ ...s.table, marginBottom: 20 }}>
+            <View style={s.tableHead}>
+              <Text style={{ ...s.tableHeadCell, flex: 2 }}>ENGAGEMENT</Text>
+              <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>MONTANT</Text>
+            </View>
+            {bilan.passif.credits.map((credit) => (
+              <View key={credit.id} style={s.tableRow}>
+                <Text style={s.tableLabel}>{credit.libelle || credit.type}{credit.etablissement ? ` — ${credit.etablissement}` : ''}</Text>
+                <Text style={{ ...s.tableValue, color: C.NEG }}>{fmtEur(credit.capitalRestantDu)}</Text>
+              </View>
+            ))}
+            {bilan.passif.autresDettes > 0 && (
+              <View style={s.tableRow}>
+                <Text style={s.tableLabel}>Autres dettes</Text>
+                <Text style={{ ...s.tableValue, color: C.NEG }}>{fmtEur(bilan.passif.autresDettes)}</Text>
+              </View>
+            )}
+            <View style={s.tableTotal}>
+              <Text style={{ flex: 2, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.NEG }}>Total Passif</Text>
+              <Text style={{ flex: 1, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.NEG, textAlign: 'right' }}>{fmtEur(calc.totalPassif)}</Text>
+            </View>
+          </View>
+
+          {/* Répartition du patrimoine */}
+          {pieSegments.length > 0 && (
+            <View style={{ padding: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
+              <Text style={{ ...s.subLabel, marginBottom: 8 }}>RÉPARTITION</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Svg width={80} height={80} viewBox="0 0 100 100">
+                  {pieSegments.map((p, i) => <Path key={i} d={p.path} fill={p.color} />)}
+                  <Circle cx={50} cy={50} r={26} fill={C.PARCHMENT} />
+                </Svg>
+                <View style={{ gap: 7, flex: 1 }}>
+                  {segments.map((seg, i) => (
+                    <View key={i} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                        <View style={{ width: 7, height: 7, backgroundColor: seg.color }} />
+                        <Text style={{ fontSize: 8, color: C.INK }}>{seg.label}</Text>
+                      </View>
+                      <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.INK }}>
+                        {Math.round(seg.ratio * 100)} %
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </View>
+          )}
         </View>
       </View>
 
-      {/* Passif table */}
-      <View>
-        <Text style={s.subLabel}>PASSIF</Text>
-        <View style={s.table}>
-          <View style={s.tableHead}>
-            <Text style={{ ...s.tableHeadCell, flex: 2 }}>ENGAGEMENT</Text>
-            <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>MONTANT</Text>
-          </View>
-          {bilan.passif.credits.map((credit) => (
-            <View key={credit.id} style={s.tableRow}>
-              <Text style={s.tableLabel}>{credit.libelle || credit.type}{credit.etablissement ? ` — ${credit.etablissement}` : ''}</Text>
-              <Text style={{ ...s.tableValue, color: C.NEG }}>{fmtEur(credit.capitalRestantDu)}</Text>
-            </View>
-          ))}
-          {bilan.passif.autresDettes > 0 && (
-            <View style={s.tableRow}>
-              <Text style={s.tableLabel}>Autres dettes</Text>
-              <Text style={{ ...s.tableValue, color: C.NEG }}>{fmtEur(bilan.passif.autresDettes)}</Text>
-            </View>
-          )}
-          <View style={s.tableTotal}>
-            <Text style={{ flex: 2, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.NEG }}>Total Passif</Text>
-            <Text style={{ flex: 1, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.NEG, textAlign: 'right' }}>{fmtEur(calc.totalPassif)}</Text>
-          </View>
-        </View>
-      </View>
     </Page>
   )
 }
 
-// ─── Revenus, Charges & Fiscalité ────────────────────────────────────────────
+// ─── Revenus & Charges ──────────────────────────────────────────
 function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
   const r = bilan.revenusCharges.revenus
   const c = bilan.revenusCharges.charges
-  const f = bilan.fiscalite
-
-  // Pie chart computation
-  const totalActif = calc.totalActif
-  const immoRatio = totalActif > 0 ? calc.totalActifImmobilier / totalActif : 0
-  const finRatio  = totalActif > 0 ? calc.totalActifFinancier  / totalActif : 0
-  const proRatio  = totalActif > 0 ? calc.totalActifProfessionnel / totalActif : 0
-
-  function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
-    const rad = ((deg - 90) * Math.PI) / 180
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
-  }
-  function arc(cx: number, cy: number, r: number, start: number, end: number) {
-    if (end - start >= 360) end = 359.99
-    const s2 = polarToCartesian(cx, cy, r, start)
-    const e  = polarToCartesian(cx, cy, r, end)
-    const large = end - start > 180 ? 1 : 0
-    return `M ${cx} ${cy} L ${s2.x} ${s2.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y} Z`
-  }
-
-  const segments = [
-    { ratio: immoRatio, color: C.FOREST,     label: 'Immobilier',    amount: calc.totalActifImmobilier },
-    { ratio: finRatio,  color: C.GOLD,       label: 'Financier',     amount: calc.totalActifFinancier },
-    { ratio: proRatio,  color: C.INK_LIGHT,  label: 'Professionnel', amount: calc.totalActifProfessionnel },
-  ].filter(seg => seg.ratio > 0)
-
-  let deg = 0
-  const pieSegments = segments.map(seg => {
-    const start = deg
-    const end = deg + seg.ratio * 360
-    deg = end
-    return { ...seg, path: arc(50, 50, 40, start, end) }
-  })
 
   const revenusItems = [
     { label: 'Salaires nets',          value: r.salaireNet },
@@ -656,38 +687,9 @@ function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCa
       <PageHeader cabinet={cabinet} clientName={clientName} />
       <SectionHeading
         num="03"
-        slug="Revenus &amp; Fiscalité"
-        title="Revenus, Charges &amp; Fiscalité"
+        slug="Revenus &amp; Charges"
+        title="Revenus &amp; Charges"
       />
-
-      {/* Pie chart — Répartition du patrimoine */}
-      {pieSegments.length > 0 && (
-        <View style={{ marginBottom: 20, padding: 16, borderWidth: 0.5, borderColor: C.BORDER }}>
-          <Text style={s.subLabel}>RÉPARTITION DU PATRIMOINE</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 32, marginTop: 4 }}>
-            <Svg width={110} height={110} viewBox="0 0 100 100">
-              {pieSegments.map((p, i) => <Path key={i} d={p.path} fill={p.color} />)}
-              <Circle cx={50} cy={50} r={26} fill={C.PARCHMENT} />
-            </Svg>
-            <View style={{ gap: 10, flex: 1 }}>
-              {segments.map((seg, i) => (
-                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <View style={{ width: 8, height: 8, backgroundColor: seg.color }} />
-                    <Text style={{ fontSize: 9, color: C.INK }}>{seg.label}</Text>
-                  </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.INK }}>
-                      {Math.round(seg.ratio * 100)} %
-                    </Text>
-                    <Text style={{ fontSize: 8, color: C.INK_MED }}>{fmtEur(seg.amount)}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        </View>
-      )}
 
       {/* Revenus foyer callout */}
       {calc.revenusFoyerAnnuels > 0 && (
@@ -728,7 +730,7 @@ function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCa
       </View>
 
       {/* Capacité épargne */}
-      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 24 }}>
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
         <View style={{ flex: 1, padding: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
           <Text style={s.kpiLabel}>CAPACITÉ D’ÉPARGNE MENSUELLE</Text>
           <Text style={{ ...s.kpiValue, fontSize: 17, color: calc.capaciteEpargneMensuelle >= 0 ? C.POS : C.NEG }}>
@@ -739,18 +741,45 @@ function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCa
           <View style={{ flex: 1, padding: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
             <Text style={s.kpiLabel}>TAUX D’ENDETTEMENT</Text>
             <Text style={{ ...s.kpiValue, fontSize: 17, color: calc.tauxEndettement > 35 ? C.NEG : C.POS }}>
-              {calc.tauxEndettement.toFixed(1)} %
+              {calc.tauxEndettement.toFixed(1)} %
             </Text>
           </View>
         )}
       </View>
 
-      {/* Analyse fiscale */}
-      <Text style={s.subLabel}>ANALYSE FISCALE</Text>
-      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 14 }}>
+      {/* Revenus conjoint */}
+      {bilan.revenusCharges.revenus.salaireNetConjoint > 0 && (
+        <View style={{ ...s.callout, borderLeftColor: C.FOREST_MED }}>
+          <Text style={{ ...s.calloutLabel, color: C.FOREST_MED }}>REVENUS DU CONJOINT</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 9, color: C.INK }}>Salaires nets</Text>
+            <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.INK }}>{fmtEur(bilan.revenusCharges.revenus.salaireNetConjoint)}</Text>
+          </View>
+        </View>
+      )}
+    </Page>
+  )
+}
+
+// ─── Analyse Fiscale & Succession ─────────────────────────────────────────
+function FiscalitePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
+  const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
+  const f = bilan.fiscalite
+
+  return (
+    <Page size="A4" style={s.page}>
+      <PageHeader cabinet={cabinet} clientName={clientName} />
+      <SectionHeading
+        num="04"
+        slug="Fiscalité"
+        title="Analyse Fiscale &amp; Succession"
+      />
+
+      {/* TMI + IFI + actif net */}
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
         <View style={{ flex: 1, padding: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
           <Text style={s.kpiLabel}>TMI</Text>
-          <Text style={{ ...s.kpiValue, fontSize: 22 }}>{calc.tmi} %</Text>
+          <Text style={{ ...s.kpiValue, fontSize: 22 }}>{calc.tmi} %</Text>
           <Text style={s.kpiSub}>Tranche marginale d’imposition</Text>
         </View>
         {calc.isAssujettisIFI && (
@@ -760,23 +789,28 @@ function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCa
             <Text style={s.kpiSub}>Assujetti à l’IFI</Text>
           </View>
         )}
+        <View style={{ flex: 1, padding: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
+          <Text style={s.kpiLabel}>ACTIF NET SUCCESSORAL</Text>
+          <Text style={{ ...s.kpiValue, fontSize: 16 }}>{fmtEur(calc.actifNetSuccessoral)}</Text>
+          <Text style={s.kpiSub}>Base de calcul succession</Text>
+        </View>
       </View>
 
       {/* Succession */}
       {f.heritiers.length > 0 && (
-        <View style={{ marginTop: 4 }}>
+        <View style={{ marginBottom: 18 }}>
           <Text style={s.subLabel}>SUCCESSION ESTIMÉE</Text>
           <View style={s.table}>
-            {f.heritiers.map((h, i) => (
+            {f.heritiers.map((h) => (
               <View key={h.id} style={s.tableRow}>
                 <Text style={s.tableLabel}>{h.prenom || h.lien}</Text>
-                <Text style={s.tableValue}>{h.lien === 'conjoint' ? 'Exonéré' : `Abattement : ${fmtEur(h.abattementRestant)}`}</Text>
+                <Text style={s.tableValue}>{h.lien === 'conjoint' ? 'Exonéré' : `Abattement : ${fmtEur(h.abattementRestant)}`}</Text>
               </View>
             ))}
           </View>
           <View style={{ padding: 10, borderWidth: 0.5, borderColor: C.BORDER, marginTop: 4 }}>
             <Text style={{ fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: C.INK }}>
-              Droits estimés total : {fmtEur(calc.droitsSuccessionEstimes)}
+              Droits estimés total : {fmtEur(calc.droitsSuccessionEstimes)}
             </Text>
             <Text style={{ fontSize: 8, color: C.INK_MED, marginTop: 3 }}>
               Estimation indicative — ne se substitue pas au calcul notarial
@@ -786,14 +820,14 @@ function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCa
       )}
 
       {f.strategieSuccession ? (
-        <View style={{ marginTop: 14, ...s.callout }}>
+        <View style={{ ...s.callout, marginBottom: 12 }}>
           <Text style={s.calloutLabel}>STRATÉGIE DE SUCCESSION</Text>
           <Text style={s.calloutText}>{f.strategieSuccession}</Text>
         </View>
       ) : null}
 
       {f.observationsFiscales ? (
-        <View style={{ marginTop: 8, ...s.callout }}>
+        <View style={{ ...s.callout }}>
           <Text style={s.calloutLabel}>OBSERVATIONS FISCALES</Text>
           <Text style={s.calloutText}>{f.observationsFiscales}</Text>
         </View>
@@ -848,7 +882,7 @@ function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Pa
   return (
     <Page size="A4" style={s.page}>
       <PageHeader cabinet={cabinet} clientName={clientName} />
-      <SectionHeading num="04" slug="Profil &amp; Objectifs" title="Profil de Risque &amp; Objectifs" />
+      <SectionHeading num="05" slug="Profil &amp; Objectifs" title="Profil de Risque &amp; Objectifs" />
 
       {/* Profil MIF2 */}
       {pr.resultat ? (
@@ -935,7 +969,7 @@ function RecommandationsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Pa
 
       {bilan.objectifs.recommandations ? (
         <View style={{ marginBottom: 28 }}>
-          <SectionHeading num="05" slug="Recommandations" title="Recommandations" />
+          <SectionHeading num="06" slug="Recommandations" title="Recommandations" />
           <Text style={{ fontSize: 10, color: C.INK, lineHeight: 1.8, fontFamily: 'Helvetica' }}>
             {bilan.objectifs.recommandations}
           </Text>
@@ -1001,8 +1035,9 @@ export function BilanPDF({ bilan, cabinet, calculations }: BilanPDFProps) {
     >
       <CoverPage bilan={bilan} cabinet={cabinet} />
       <IdentitePage bilan={bilan} cabinet={cabinet} />
-      <BilanPage bilan={bilan} calc={calculations} cabinet={cabinet} />
+      <BilanActifPage bilan={bilan} calc={calculations} cabinet={cabinet} />
       <RevenusPage bilan={bilan} calc={calculations} cabinet={cabinet} />
+      <FiscalitePage bilan={bilan} calc={calculations} cabinet={cabinet} />
       <ProfilObjectifsPage bilan={bilan} cabinet={cabinet} />
       <RecommandationsPage bilan={bilan} cabinet={cabinet} />
     </Document>
