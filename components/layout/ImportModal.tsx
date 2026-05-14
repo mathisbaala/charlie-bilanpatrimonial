@@ -147,7 +147,8 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
     const revenusPayload: Record<string, number> = {}
     if (selectedFields.has('salaireNet') && extracted.salaireNet) revenusPayload['salaireNet'] = extracted.salaireNet
     if (selectedFields.has('revenusFonciers') && extracted.revenusFonciers) revenusPayload['revenusFonciers'] = extracted.revenusFonciers
-    if (Object.keys(revenusPayload).length) updateRevenusCharges({ revenus: revenusPayload } as Parameters<typeof updateRevenusCharges>[0])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (Object.keys(revenusPayload).length) updateRevenusCharges({ revenus: revenusPayload } as any)
 
     setStep('done')
   }

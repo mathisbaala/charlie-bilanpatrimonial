@@ -12,11 +12,12 @@ export async function POST(request: NextRequest) {
     const cabinet: ParametresCabinet = body.cabinet
     const calculations = calculateBilan(bilan)
 
-    const buffer = await renderToBuffer(
-      React.createElement(BilanPDF, { bilan, cabinet, calculations })
-    )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const element = React.createElement(BilanPDF as any, { bilan, cabinet, calculations })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const buffer = await renderToBuffer(element as any)
 
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as unknown as BodyInit, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="Bilan_Patrimonial_${bilan.identite.prenom}_${bilan.identite.nom}.pdf"`,
