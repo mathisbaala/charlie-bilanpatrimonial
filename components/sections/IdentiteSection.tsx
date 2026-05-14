@@ -1,9 +1,10 @@
 'use client'
 
 import { useBilan } from '@/context/BilanContext'
-import { InputField, SelectField } from '@/components/ui/FormField'
+import { InputField, SelectField, TextareaField } from '@/components/ui/FormField'
 import { Card } from '@/components/ui/Card'
 import { SectionHeader } from '@/components/ui/SectionHeader'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { User } from 'lucide-react'
 
 const CIVILITE_OPTIONS = [
@@ -75,6 +76,12 @@ export function IdentiteSection() {
             options={SITUATION_PRO_OPTIONS}
             required
           />
+          <InputField
+            label="Profession détaillée"
+            value={identite.professionDetaille}
+            onChange={(v) => updateIdentite({ professionDetaille: v })}
+            placeholder="Ex: Chirurgien orthopédiste, CHU Bordeaux"
+          />
         </div>
 
         <div className="mt-6 mb-5">
@@ -105,6 +112,12 @@ export function IdentiteSection() {
               placeholder="Paris"
             />
             <InputField
+              label="Pays de résidence fiscale"
+              value={identite.paysResidenceFiscale}
+              onChange={(v) => updateIdentite({ paysResidenceFiscale: v })}
+              placeholder="France"
+            />
+            <InputField
               label="Email"
               value={identite.email}
               onChange={(v) => updateIdentite({ email: v })}
@@ -119,6 +132,33 @@ export function IdentiteSection() {
               placeholder="+33 6 12 34 56 78"
             />
           </div>
+        </div>
+
+        {/* PEP bloc */}
+        <div className="pt-4 border-t border-ink-100">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={identite.isPEP}
+              onChange={(e) => updateIdentite({ isPEP: e.target.checked })}
+              className="w-4 h-4 rounded border-ink-300 text-navy-600 focus:ring-navy-50"
+            />
+            <span className="text-sm font-medium text-ink-700">
+              Personne Politiquement Exposée (PEP)
+            </span>
+            <Tooltip content="Personne exerçant ou ayant exercé une fonction publique importante (ministre, élu, dirigeant d'État). Obligations KYC renforcées." />
+          </label>
+          {identite.isPEP && (
+            <div className="mt-3">
+              <TextareaField
+                label="Description de la fonction"
+                value={identite.descriptionPEP}
+                onChange={(v) => updateIdentite({ descriptionPEP: v })}
+                placeholder="Ex: Ancien maire de Lyon (2010-2020)"
+                rows={2}
+              />
+            </div>
+          )}
         </div>
       </Card>
     </div>
