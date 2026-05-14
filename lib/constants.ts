@@ -1,6 +1,6 @@
 import type { ObjectifPatrimonial, ParametresCabinet, BilanData } from './types'
 
-export const OBJECTIFS_DEFAUT: Omit<ObjectifPatrimonial, 'selected' | 'priorite'>[] = [
+export const OBJECTIFS_DEFAUT: Omit<ObjectifPatrimonial, 'selected' | 'priorite' | 'montantCible' | 'delaiCible'>[] = [
   { id: 'retraite', libelle: 'Préparer la retraite' },
   { id: 'fiscalite', libelle: 'Optimiser la fiscalité' },
   { id: 'transmission', libelle: 'Transmettre le patrimoine' },
@@ -23,7 +23,6 @@ export const PARAMETRES_CABINET_DEFAUT: ParametresCabinet = {
   mentionsLegales: 'Ce document est établi à titre informatif. Il ne constitue pas un conseil en investissement au sens de la réglementation MIF2.',
 }
 
-// Default empty bilan
 export function createBilanVide(): BilanData {
   return {
     id: crypto.randomUUID(),
@@ -36,19 +35,28 @@ export function createBilanVide(): BilanData {
       dateNaissance: '',
       nationalite: 'Française',
       situationProfessionnelle: '',
+      professionDetaille: '',
       adresse: '',
       codePostal: '',
       ville: '',
+      paysResidenceFiscale: 'France',
       email: '',
       telephone: '',
+      isPEP: false,
+      descriptionPEP: '',
     },
     situationFamiliale: {
       statutMarital: '',
       regimeMatrimonial: '',
+      dateUnion: '',
+      conjoint: null,
       nombreEnfants: 0,
       enfants: [],
       hasTestament: false,
+      typeTestament: '',
+      dateTestament: '',
       hasDonation: false,
+      donations: [],
       commentairesFamiliaux: '',
     },
     actif: {
@@ -66,10 +74,15 @@ export function createBilanVide(): BilanData {
         salaireNet: 0,
         bicBnc: 0,
         revenusFonciers: 0,
+        regimeFoncier: '',
+        chargesFoncieresDed: 0,
         dividendes: 0,
         plusValues: 0,
         pensions: 0,
         autresRevenus: 0,
+        avantagesNature: 0,
+        salaireNetConjoint: 0,
+        autresRevenusConjoint: 0,
       },
       charges: {
         remboursementsCredit: 0,
@@ -85,6 +98,7 @@ export function createBilanVide(): BilanData {
       actifImmobilierNetIFI: 0,
       observationsFiscales: '',
       strategieSuccession: '',
+      heritiers: [],
     },
     profilRisque: {
       objectif: '',
@@ -92,17 +106,24 @@ export function createBilanVide(): BilanData {
       experience: '',
       capacitePertes: '',
       reactionBaisse: '',
+      toleranceIlliquidite: '',
+      classificationClient: '',
+      justificationClassification: '',
+      revenuAnnuelConfirme: 0,
+      patrimoineFinancierConfirme: 0,
+      chargesFixesConfirmees: 0,
       resultat: '',
     },
     objectifs: {
-      objectifs: OBJECTIFS_DEFAUT.map(o => ({ ...o, selected: false, priorite: '' as const })),
+      objectifs: OBJECTIFS_DEFAUT.map(o => ({ ...o, selected: false, priorite: '' as const, montantCible: 0, delaiCible: '' as const })),
+      preferencesESG: false,
       commentaires: '',
       recommandations: '',
     },
   }
 }
 
-// Barème TMI 2024 (tranches IR)
+// Barème TMI 2024
 export const BAREME_TMI_2024 = [
   { seuil: 0, taux: 0 },
   { seuil: 11294, taux: 11 },
@@ -114,10 +135,20 @@ export const BAREME_TMI_2024 = [
 // Barème IFI 2024
 export const BAREME_IFI_2024 = [
   { seuil: 0, taux: 0 },
-  { seuil: 800000, taux: 0 },      // no IFI below 800k
-  { seuil: 1300000, taux: 0.5 },   // 0.5% from 800k to 1.3M
+  { seuil: 800000, taux: 0 },
+  { seuil: 1300000, taux: 0.5 },
   { seuil: 2570000, taux: 0.7 },
   { seuil: 5000000, taux: 1.0 },
   { seuil: 10000000, taux: 1.25 },
-  // above 10M: 1.5%
+]
+
+// Barème droits succession enfants 2024
+export const BAREME_SUCCESSION_ENFANTS = [
+  { seuil: 0, taux: 5 },
+  { seuil: 8072, taux: 10 },
+  { seuil: 12109, taux: 15 },
+  { seuil: 15932, taux: 20 },
+  { seuil: 552324, taux: 30 },
+  { seuil: 902838, taux: 40 },
+  { seuil: 1805677, taux: 45 },
 ]

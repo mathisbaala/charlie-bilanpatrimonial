@@ -18,6 +18,80 @@ import { createBilanVide, PARAMETRES_CABINET_DEFAUT } from '@/lib/constants'
 import { calculateBilan, computeProfilRisque } from '@/lib/calculations'
 
 const STORAGE_KEY_BILAN = 'charlie_bilan_data'
+
+// Merges stored data with defaults so old localStorage data keeps working
+function migrateData(stored: Partial<BilanData>): BilanData {
+  const defaults = createBilanVide()
+  return {
+    ...defaults,
+    ...stored,
+    identite: { ...defaults.identite, ...stored.identite },
+    situationFamiliale: {
+      ...defaults.situationFamiliale,
+      ...stored.situationFamiliale,
+      conjoint: stored.situationFamiliale?.conjoint ?? null,
+      donations: stored.situationFamiliale?.donations ?? [],
+      enfants: (stored.situationFamiliale?.enfants ?? []).map(e => ({
+        ...e,
+        prenom: e.prenom ?? '',
+        lienParente: e.lienParente ?? ('' as const),
+      })),
+    },
+    actif: {
+      immobilier: (stored.actif?.immobilier ?? []).map(b => ({
+        ...b,
+        prixAcquisition: b.prixAcquisition ?? 0,
+        surface: b.surface ?? 0,
+        loyerMensuel: b.loyerMensuel ?? 0,
+        regimeFiscalFoncier: b.regimeFiscalFoncier ?? ('' as const),
+        chargesFoncieresDed: b.chargesFoncieresDed ?? 0,
+      })),
+      financier: (stored.actif?.financier ?? []).map(a => ({
+        ...a,
+        dateOuverture: a.dateOuverture ?? '',
+        beneficiaires: a.beneficiaires ?? '',
+        originePER: a.originePER ?? ('' as const),
+        montantVersementsVolontairesPER: a.montantVersementsVolontairesPER ?? 0,
+        tauxEuros: a.tauxEuros ?? 0,
+        tauxUC: a.tauxUC ?? 0,
+        modeGestion: a.modeGestion ?? ('' as const),
+        tauxRemunerationPEL: a.tauxRemunerationPEL ?? 0,
+      })),
+      professionnel: stored.actif?.professionnel ?? [],
+    },
+    passif: {
+      ...defaults.passif,
+      ...stored.passif,
+      credits: (stored.passif?.credits ?? []).map(c => ({
+        ...c,
+        typeTaux: c.typeTaux ?? ('' as const),
+        garantie: c.garantie ?? ('' as const),
+        tauxADE: c.tauxADE ?? 0,
+        couvertureADE: c.couvertureADE ?? ('' as const),
+      })),
+    },
+    revenusCharges: {
+      revenus: { ...defaults.revenusCharges.revenus, ...stored.revenusCharges?.revenus },
+      charges: { ...defaults.revenusCharges.charges, ...stored.revenusCharges?.charges },
+    },
+    fiscalite: {
+      ...defaults.fiscalite,
+      ...stored.fiscalite,
+      heritiers: stored.fiscalite?.heritiers ?? [],
+    },
+    profilRisque: { ...defaults.profilRisque, ...stored.profilRisque },
+    objectifs: {
+      ...defaults.objectifs,
+      ...stored.objectifs,
+      objectifs: defaults.objectifs.objectifs.map(defaultObj => {
+        const existing = stored.objectifs?.objectifs?.find(o => o.id === defaultObj.id)
+        return existing
+          ? { ...defaultObj, ...existing }
+          : defaultObj
+      }),
+    },
+  }
+}
 const STORAGE_KEY_CABINET = 'charlie_cabinet_params'
 
 export type SectionId =
@@ -102,7 +176,7 @@ export function BilanProvider({ children }: { children: React.ReactNode }) {
     try {
       const savedBilan = localStorage.getItem(STORAGE_KEY_BILAN)
       if (savedBilan) {
-        dispatch({ type: 'LOAD', payload: JSON.parse(savedBilan) })
+        dispatch({ type: 'LOAD', payload: migrateData(JSON.parse(savedBilan)) })
       }
       const savedCabinet = localStorage.getItem(STORAGE_KEY_CABINET)
       if (savedCabinet) {
@@ -143,7 +217,8 @@ export function BilanProvider({ children }: { children: React.ReactNode }) {
       bilan.profilRisque.horizon &&
       bilan.profilRisque.experience &&
       bilan.profilRisque.capacitePertes &&
-      bilan.profilRisque.reactionBaisse
+      bilan.profilRisque.reactionBaisse &&
+      bilan.profilRisque.toleranceIlliquidite
     ) {
       const resultat = computeProfilRisque(bilan)
       if (resultat !== bilan.profilRisque.resultat) {
@@ -156,6 +231,7 @@ export function BilanProvider({ children }: { children: React.ReactNode }) {
     bilan.profilRisque.experience,
     bilan.profilRisque.capacitePertes,
     bilan.profilRisque.reactionBaisse,
+    bilan.profilRisque.toleranceIlliquidite,
   ])
 
   const value: BilanContextValue = {
