@@ -5,6 +5,7 @@ import { useBilan } from '@/context/BilanContext'
 import { InputField, SelectField, TextareaField, ToggleField } from '@/components/ui/FormField'
 import { Card } from '@/components/ui/Card'
 import { SectionHeader } from '@/components/ui/SectionHeader'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { formatEuros } from '@/lib/calculations'
 import type { Credit } from '@/lib/types'
 import { CreditCard, Plus, Trash2 } from 'lucide-react'
@@ -16,6 +17,28 @@ const TYPE_CREDIT_OPTIONS = [
   { value: 'autre', label: 'Autre crédit' },
 ]
 
+const TYPE_TAUX_OPTIONS = [
+  { value: '', label: '—' },
+  { value: 'fixe', label: 'Fixe' },
+  { value: 'variable', label: 'Variable' },
+  { value: 'mixte', label: 'Mixte' },
+]
+
+const GARANTIE_OPTIONS = [
+  { value: '', label: '—' },
+  { value: 'hypotheque', label: 'Hypothèque' },
+  { value: 'caution', label: 'Caution' },
+  { value: 'ppd', label: 'PPD' },
+  { value: 'autre', label: 'Autre' },
+]
+
+const COUVERTURE_ADE_OPTIONS = [
+  { value: '', label: '—' },
+  { value: 'dc_ptia', label: 'DC / PTIA' },
+  { value: 'dc_ptia_itt', label: 'DC / PTIA / ITT' },
+  { value: 'tous_risques', label: 'Tous risques' },
+]
+
 function createCredit(): Credit {
   return {
     id: crypto.randomUUID(),
@@ -24,9 +47,13 @@ function createCredit(): Credit {
     etablissement: '',
     capitalRestantDu: 0,
     tauxInteret: 0,
+    typeTaux: '',
+    garantie: '',
     mensualite: 0,
     dateEcheance: '',
     hasAssuranceEmprunteur: true,
+    tauxADE: 0,
+    couvertureADE: '',
   }
 }
 
@@ -82,6 +109,8 @@ export function PassifSection() {
                 <InputField label="Établissement" value={credit.etablissement} onChange={(v) => updateCredit(credit.id, { etablissement: v })} placeholder="BNP Paribas" />
                 <InputField label="Capital restant dû" value={credit.capitalRestantDu || ''} onChange={(v) => updateCredit(credit.id, { capitalRestantDu: parseFloat(v) || 0 })} type="number" suffix="€" />
                 <InputField label="Taux d'intérêt" value={credit.tauxInteret || ''} onChange={(v) => updateCredit(credit.id, { tauxInteret: parseFloat(v) || 0 })} type="number" suffix="%" />
+                <SelectField label="Type de taux" value={credit.typeTaux} onChange={(v) => updateCredit(credit.id, { typeTaux: v as Credit['typeTaux'] })} options={TYPE_TAUX_OPTIONS} />
+                <SelectField label="Garantie" value={credit.garantie} onChange={(v) => updateCredit(credit.id, { garantie: v as Credit['garantie'] })} options={GARANTIE_OPTIONS} />
                 <InputField label="Mensualité" value={credit.mensualite || ''} onChange={(v) => updateCredit(credit.id, { mensualite: parseFloat(v) || 0 })} type="number" suffix="€/mois" />
                 <InputField label="Date d'échéance" value={credit.dateEcheance} onChange={(v) => updateCredit(credit.id, { dateEcheance: v })} type="date" />
                 <div className="flex items-center pt-3">
@@ -91,6 +120,29 @@ export function PassifSection() {
                     onChange={(v) => updateCredit(credit.id, { hasAssuranceEmprunteur: v })}
                   />
                 </div>
+                {credit.hasAssuranceEmprunteur && (
+                  <>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="flex items-center text-xs font-medium text-ink-600 uppercase tracking-wide">
+                        Taux ADE
+                        <Tooltip content="Assurance Décès Emprunteur. Prend en charge le remboursement du crédit en cas de décès, PTIA ou ITT selon la couverture." />
+                      </span>
+                      <InputField
+                        label=""
+                        value={credit.tauxADE || ''}
+                        onChange={(v) => updateCredit(credit.id, { tauxADE: parseFloat(v) || 0 })}
+                        type="number"
+                        suffix="%"
+                      />
+                    </div>
+                    <SelectField
+                      label="Couverture ADE"
+                      value={credit.couvertureADE}
+                      onChange={(v) => updateCredit(credit.id, { couvertureADE: v as Credit['couvertureADE'] })}
+                      options={COUVERTURE_ADE_OPTIONS}
+                    />
+                  </>
+                )}
               </div>
             )}
           </Card>
