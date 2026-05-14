@@ -5,6 +5,7 @@ import { useBilan } from '@/context/BilanContext'
 import { InputField, SelectField } from '@/components/ui/FormField'
 import { Card } from '@/components/ui/Card'
 import { SectionHeader } from '@/components/ui/SectionHeader'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { formatEuros } from '@/lib/calculations'
 import type { BienImmobilier, ActifFinancier, ActifProfessionnel } from '@/lib/types'
 import { Building2, Plus, Trash2 } from 'lucide-react'
@@ -29,6 +30,12 @@ const FINANCEMENT_OPTIONS = [
   { value: 'mixte', label: 'Mixte' },
 ]
 
+const REGIME_FONCIER_OPTIONS = [
+  { value: '', label: '—' },
+  { value: 'micro', label: 'Micro-foncier' },
+  { value: 'reel', label: 'Réel' },
+]
+
 const ACTIF_FIN_OPTIONS = [
   { value: 'assurance_vie', label: 'Assurance-vie' },
   { value: 'pea', label: 'PEA' },
@@ -37,6 +44,8 @@ const ACTIF_FIN_OPTIONS = [
   { value: 'livret_a', label: 'Livret A' },
   { value: 'ldds', label: 'LDDS' },
   { value: 'lep', label: 'LEP' },
+  { value: 'pel', label: 'PEL' },
+  { value: 'cel', label: 'CEL' },
   { value: 'crypto', label: 'Crypto-actifs' },
   { value: 'crowdfunding', label: 'Crowdfunding' },
   { value: 'autre', label: 'Autre placement' },
@@ -48,11 +57,46 @@ const ORIGINE_PER_OPTIONS = [
   { value: 'mixte', label: 'Mixte' },
 ]
 
+const MODE_GESTION_OPTIONS = [
+  { value: '', label: '—' },
+  { value: 'libre', label: 'Libre' },
+  { value: 'pilotee', label: 'Pilotée' },
+  { value: 'profilee', label: 'Profilée' },
+]
+
+const LOCATIF_TYPES: BienImmobilier['type'][] = ['locatif_nu', 'locatif_meuble', 'lmnp', 'scpi']
+
 function createBienImmo(): BienImmobilier {
-  return { id: crypto.randomUUID(), type: 'residence_principale', libelle: '', valeurEstimee: 0, dateAcquisition: '', modeFinancement: '' }
+  return {
+    id: crypto.randomUUID(),
+    type: 'residence_principale',
+    libelle: '',
+    valeurEstimee: 0,
+    prixAcquisition: 0,
+    dateAcquisition: '',
+    modeFinancement: '',
+    surface: 0,
+    loyerMensuel: 0,
+    regimeFiscalFoncier: '',
+    chargesFoncieresDed: 0,
+  }
 }
 function createActifFin(): ActifFinancier {
-  return { id: crypto.randomUUID(), type: 'assurance_vie', libelle: '', etablissement: '', valeur: 0 }
+  return {
+    id: crypto.randomUUID(),
+    type: 'assurance_vie',
+    libelle: '',
+    etablissement: '',
+    valeur: 0,
+    dateOuverture: '',
+    beneficiaires: '',
+    originePER: '',
+    montantVersementsVolontairesPER: 0,
+    tauxEuros: 0,
+    tauxUC: 0,
+    modeGestion: '',
+    tauxRemunerationPEL: 0,
+  }
 }
 function createActifPro(): ActifProfessionnel {
   return { id: crypto.randomUUID(), libelle: '', valeurEstimee: 0, description: '' }
@@ -137,34 +181,127 @@ export function ActifSection() {
       {/* Immobilier tab */}
       {activeTab === 'immobilier' && (
         <div className="space-y-3">
-          {actif.immobilier.map((bien) => (
-            <Card key={bien.id} padding="sm">
-              <div className="flex items-start justify-between mb-3">
-                <button
-                  onClick={() => setExpandedId(expandedId === bien.id ? null : bien.id)}
-                  className="flex-1 text-left"
-                >
-                  <p className="font-medium text-ink-800 text-sm">{bien.libelle || 'Nouveau bien'}</p>
-                  <p className="text-xs text-ink-400">{BIEN_IMMO_OPTIONS.find(o => o.value === bien.type)?.label} · {formatEuros(bien.valeurEstimee)}</p>
-                </button>
-                <button onClick={() => removeImmo(bien.id)} className="ml-2 p-1.5 text-ink-400 hover:text-neg-600 hover:bg-neg-50 rounded transition-colors">
-                  <Trash2 size={14} />
-                </button>
-              </div>
-              {expandedId === bien.id && (
-                <div className="grid grid-cols-2 gap-4 pt-3 border-t border-ink-100">
-                  <SelectField label="Type" value={bien.type} onChange={(v) => updateImmo(bien.id, { type: v as BienImmobilier['type'] })} options={BIEN_IMMO_OPTIONS} />
-                  <InputField label="Libellé" value={bien.libelle} onChange={(v) => updateImmo(bien.id, { libelle: v })} placeholder="15 rue de la Paix, Paris" />
-                  <InputField label="Valeur estimée" value={bien.valeurEstimee || ''} onChange={(v) => updateImmo(bien.id, { valeurEstimee: parseFloat(v) || 0 })} type="number" suffix="€" />
-                  <InputField label="Date d'acquisition" value={bien.dateAcquisition} onChange={(v) => updateImmo(bien.id, { dateAcquisition: v })} type="date" />
-                  <SelectField label="Mode de financement" value={bien.modeFinancement} onChange={(v) => updateImmo(bien.id, { modeFinancement: v as BienImmobilier['modeFinancement'] })} options={FINANCEMENT_OPTIONS} />
-                  {(bien.type === 'scpi' || bien.type === 'opci') && (
-                    <InputField label="Nombre de parts" value={bien.nombreParts || ''} onChange={(v) => updateImmo(bien.id, { nombreParts: parseFloat(v) || 0 })} type="number" />
-                  )}
+          {actif.immobilier.map((bien) => {
+            const isLocatif = LOCATIF_TYPES.includes(bien.type)
+            const pvLatente = (bien.valeurEstimee > 0 && bien.prixAcquisition > 0)
+              ? bien.valeurEstimee - bien.prixAcquisition
+              : null
+            const rendement = (bien.loyerMensuel > 0 && bien.valeurEstimee > 0)
+              ? ((bien.loyerMensuel * 12) / bien.valeurEstimee) * 100
+              : null
+
+            return (
+              <Card key={bien.id} padding="sm">
+                <div className="flex items-start justify-between mb-3">
+                  <button
+                    onClick={() => setExpandedId(expandedId === bien.id ? null : bien.id)}
+                    className="flex-1 text-left"
+                  >
+                    <p className="font-medium text-ink-800 text-sm">{bien.libelle || 'Nouveau bien'}</p>
+                    <p className="text-xs text-ink-400">{BIEN_IMMO_OPTIONS.find(o => o.value === bien.type)?.label} · {formatEuros(bien.valeurEstimee)}</p>
+                  </button>
+                  <button onClick={() => removeImmo(bien.id)} className="ml-2 p-1.5 text-ink-400 hover:text-neg-600 hover:bg-neg-50 rounded transition-colors">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
-              )}
-            </Card>
-          ))}
+                {expandedId === bien.id && (
+                  <div className="grid grid-cols-2 gap-4 pt-3 border-t border-ink-100">
+                    <SelectField label="Type" value={bien.type} onChange={(v) => updateImmo(bien.id, { type: v as BienImmobilier['type'] })} options={BIEN_IMMO_OPTIONS} />
+                    <InputField label="Libellé" value={bien.libelle} onChange={(v) => updateImmo(bien.id, { libelle: v })} placeholder="15 rue de la Paix, Paris" />
+                    <InputField label="Valeur estimée" value={bien.valeurEstimee || ''} onChange={(v) => updateImmo(bien.id, { valeurEstimee: parseFloat(v) || 0 })} type="number" suffix="€" />
+
+                    {/* Prix d'acquisition + PV latente badge */}
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-1">
+                        <label className="text-xs font-medium text-ink-600">Prix d&apos;acquisition</label>
+                        <Tooltip content="Différence entre la valeur estimée actuelle et le prix d'acquisition. Non imposable tant que le bien n'est pas vendu." />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <InputField
+                          label=""
+                          value={bien.prixAcquisition || ''}
+                          onChange={(v) => updateImmo(bien.id, { prixAcquisition: parseFloat(v) || 0 })}
+                          type="number"
+                          suffix="€"
+                        />
+                        {pvLatente !== null && (
+                          <span className={`text-xs font-semibold whitespace-nowrap px-2 py-0.5 rounded-full ${
+                            pvLatente >= 0
+                              ? 'bg-pos-50 text-pos-700'
+                              : 'bg-neg-50 text-neg-700'
+                          }`}>
+                            PV latente : {pvLatente >= 0 ? '+' : ''}{formatEuros(pvLatente)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Surface */}
+                    <InputField label="Surface" value={bien.surface || ''} onChange={(v) => updateImmo(bien.id, { surface: parseFloat(v) || 0 })} type="number" suffix="m²" />
+
+                    <InputField label="Date d'acquisition" value={bien.dateAcquisition} onChange={(v) => updateImmo(bien.id, { dateAcquisition: v })} type="date" />
+                    <SelectField label="Mode de financement" value={bien.modeFinancement} onChange={(v) => updateImmo(bien.id, { modeFinancement: v as BienImmobilier['modeFinancement'] })} options={FINANCEMENT_OPTIONS} />
+
+                    {(bien.type === 'scpi' || bien.type === 'opci') && (
+                      <InputField label="Nombre de parts" value={bien.nombreParts || ''} onChange={(v) => updateImmo(bien.id, { nombreParts: parseFloat(v) || 0 })} type="number" />
+                    )}
+
+                    {/* Locatif-specific fields */}
+                    {isLocatif && (
+                      <>
+                        {/* Loyer mensuel + rendement badge */}
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1">
+                            <label className="text-xs font-medium text-ink-600">Loyer mensuel</label>
+                            <Tooltip content="Loyers annuels / valeur du bien. Ne tient pas compte des charges, vacances locatives et fiscalité." />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <InputField
+                              label=""
+                              value={bien.loyerMensuel || ''}
+                              onChange={(v) => updateImmo(bien.id, { loyerMensuel: parseFloat(v) || 0 })}
+                              type="number"
+                              suffix="€"
+                            />
+                            {rendement !== null && (
+                              <span className="text-xs font-semibold whitespace-nowrap px-2 py-0.5 rounded-full bg-gold/10 text-gold">
+                                Rendement : {rendement.toFixed(2)} %
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Régime fiscal foncier */}
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1">
+                            <label className="text-xs font-medium text-ink-600">Régime fiscal foncier</label>
+                            <Tooltip content="Abattement forfaitaire de 30 % sur les loyers bruts. Plafonné à 15 000 €/an de revenus fonciers." />
+                          </div>
+                          <SelectField
+                            label=""
+                            value={bien.regimeFiscalFoncier}
+                            onChange={(v) => updateImmo(bien.id, { regimeFiscalFoncier: v as BienImmobilier['regimeFiscalFoncier'] })}
+                            options={REGIME_FONCIER_OPTIONS}
+                          />
+                        </div>
+
+                        {/* Charges déductibles (régime réel only) */}
+                        {bien.regimeFiscalFoncier === 'reel' && (
+                          <InputField
+                            label="Charges déductibles"
+                            value={bien.chargesFoncieresDed || ''}
+                            onChange={(v) => updateImmo(bien.id, { chargesFoncieresDed: parseFloat(v) || 0 })}
+                            type="number"
+                            suffix="€/an"
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </Card>
+            )
+          })}
           <button onClick={addImmo} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-ink-200 text-ink-600 hover:border-navy-600 hover:text-navy-600 transition-colors text-sm">
             <Plus size={16} /> Ajouter un bien immobilier
           </button>
@@ -191,12 +328,57 @@ export function ActifSection() {
                   <InputField label="Libellé / nom du contrat" value={fin.libelle} onChange={(v) => updateFin(fin.id, { libelle: v })} placeholder="Contrat Eres 2019" />
                   <InputField label="Établissement" value={fin.etablissement} onChange={(v) => updateFin(fin.id, { etablissement: v })} placeholder="AXA, BNP..." />
                   <InputField label="Valeur" value={fin.valeur || ''} onChange={(v) => updateFin(fin.id, { valeur: parseFloat(v) || 0 })} type="number" suffix="€" />
+
+                  {/* Date d'ouverture — always visible */}
                   <InputField label="Date d'ouverture" value={fin.dateOuverture || ''} onChange={(v) => updateFin(fin.id, { dateOuverture: v })} type="date" />
+
+                  {/* Assurance-vie specific */}
                   {fin.type === 'assurance_vie' && (
-                    <InputField label="Bénéficiaires" value={fin.beneficiaires || ''} onChange={(v) => updateFin(fin.id, { beneficiaires: v })} placeholder="Conjoint, enfants..." />
+                    <>
+                      <InputField label="Bénéficiaires" value={fin.beneficiaires || ''} onChange={(v) => updateFin(fin.id, { beneficiaires: v })} placeholder="Conjoint, enfants..." />
+                      <InputField
+                        label="Taux fonds euros"
+                        value={fin.tauxEuros || ''}
+                        onChange={(v) => {
+                          const euros = Math.min(100, Math.max(0, parseFloat(v) || 0))
+                          updateFin(fin.id, { tauxEuros: euros, tauxUC: 100 - euros })
+                        }}
+                        type="number"
+                        suffix="%"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-ink-500">UC :</span>
+                        <span className="text-sm font-medium text-ink-800">{fin.tauxUC ?? (100 - (fin.tauxEuros || 0))} %</span>
+                      </div>
+                      <SelectField label="Mode de gestion" value={fin.modeGestion || ''} onChange={(v) => updateFin(fin.id, { modeGestion: v as ActifFinancier['modeGestion'] })} options={MODE_GESTION_OPTIONS} />
+                    </>
                   )}
+
+                  {/* PER specific */}
                   {fin.type === 'per' && (
-                    <SelectField label="Origine PER" value={fin.originePER || ''} onChange={(v) => updateFin(fin.id, { originePER: v as ActifFinancier['originePER'] })} options={ORIGINE_PER_OPTIONS} />
+                    <>
+                      <SelectField label="Origine PER" value={fin.originePER || ''} onChange={(v) => updateFin(fin.id, { originePER: v as ActifFinancier['originePER'] })} options={ORIGINE_PER_OPTIONS} />
+                      {fin.originePER !== 'entreprise' && (
+                        <InputField
+                          label="Versements volontaires"
+                          value={fin.montantVersementsVolontairesPER || ''}
+                          onChange={(v) => updateFin(fin.id, { montantVersementsVolontairesPER: parseFloat(v) || 0 })}
+                          type="number"
+                          suffix="€"
+                        />
+                      )}
+                    </>
+                  )}
+
+                  {/* PEL specific */}
+                  {fin.type === 'pel' && (
+                    <InputField
+                      label="Taux de rémunération"
+                      value={fin.tauxRemunerationPEL || ''}
+                      onChange={(v) => updateFin(fin.id, { tauxRemunerationPEL: parseFloat(v) || 0 })}
+                      type="number"
+                      suffix="%"
+                    />
                   )}
                 </div>
               )}
