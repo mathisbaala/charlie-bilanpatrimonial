@@ -119,7 +119,7 @@ export function FamilialeSection() {
       <div className="space-y-4">
         {/* Statut marital */}
         <Card>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+          <div className={`grid gap-x-6 gap-y-5 ${showRegimeMatrimonial || showDateUnion ? 'grid-cols-2' : 'grid-cols-1 max-w-sm'}`}>
             <SelectField
               label="Statut marital"
               value={situationFamiliale.statutMarital}
@@ -144,6 +144,14 @@ export function FamilialeSection() {
               />
             )}
           </div>
+          {!showRegimeMatrimonial && situationFamiliale.statutMarital && (
+            <p className="mt-3 text-xs text-ink-400">
+              {situationFamiliale.statutMarital === 'celibataire' && 'Aucun régime matrimonial applicable.'}
+              {situationFamiliale.statutMarital === 'concubinage' && 'Concubinage : pas de régime matrimonial légal.'}
+              {situationFamiliale.statutMarital === 'divorce' && 'Divorcé(e) : régime dissous.'}
+              {situationFamiliale.statutMarital === 'veuf' && 'Veuf / Veuve : régime dissous au décès.'}
+            </p>
+          )}
         </Card>
 
         {/* Conjoint */}

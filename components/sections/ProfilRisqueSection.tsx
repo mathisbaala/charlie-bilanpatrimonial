@@ -18,14 +18,14 @@ function ChoiceButton({ selected, onClick, label, description }: ChoiceButtonPro
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all duration-150 ${
+      className={`w-full text-left px-4 py-3.5 rounded-xl border-2 transition-all duration-150 ${
         selected
           ? 'border-navy-600 bg-navy-50 text-navy-600'
           : 'border-ink-100 bg-surface-1 text-ink-800 hover:border-ink-200 hover:bg-surface-2'
       }`}
     >
-      <p className="font-medium text-sm">{label}</p>
-      {description && <p className="text-xs mt-0.5 opacity-70">{description}</p>}
+      <p className="font-medium" style={{ fontSize: 13 }}>{label}</p>
+      {description && <p className="mt-1 opacity-70" style={{ fontSize: 12 }}>{description}</p>}
     </button>
   )
 }
@@ -172,11 +172,11 @@ export function ProfilRisqueSection() {
         {/* Questions 1–5 */}
         {questions.map((q, i) => (
           <Card key={q.key}>
-            <p className="text-sm font-medium text-ink-800 mb-3">
+            <p className="font-medium text-ink-800 mb-4" style={{ fontSize: 13 }}>
               <span className="text-ink-400 mr-2">{i + 1}.</span>
               {q.title}
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               {q.choices.map((choice) => (
                 <ChoiceButton
                   key={choice.value}
@@ -192,14 +192,14 @@ export function ProfilRisqueSection() {
 
         {/* Addition 2: Question 6 — tolérance à l'illiquidité */}
         <Card>
-          <div className="flex items-center gap-1 mb-3">
-            <p className="text-sm font-medium text-ink-800">
+          <div className="flex items-start gap-1 mb-4">
+            <p className="font-medium text-ink-800" style={{ fontSize: 13 }}>
               <span className="text-ink-400 mr-2">6.</span>
               Quelle part de votre patrimoine peut être bloquée sans possibilité de sortie immédiate ?
             </p>
             <Tooltip content="Part du patrimoine pouvant être bloquée sans possibilité de sortie immédiate. Ouvre l'accès aux SCPI, private equity, FCPI." />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2.5">
             {illiquiditeChoices.map((choice) => (
               <ChoiceButton
                 key={choice.value}

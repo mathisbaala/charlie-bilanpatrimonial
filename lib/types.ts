@@ -7,6 +7,7 @@ export interface Identite {
   nom: string
   prenom: string
   dateNaissance: string
+  lieuNaissance: string
   nationalite: string
   situationProfessionnelle: SituationProfessionnelle | ''
   professionDetaille: string           // ex: "Chirurgien, CHU Bordeaux"

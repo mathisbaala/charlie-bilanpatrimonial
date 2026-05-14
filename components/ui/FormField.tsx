@@ -17,6 +17,7 @@ interface InputFieldProps {
   min?: number
   max?: number
   step?: number
+  style?: React.CSSProperties
 }
 
 export function InputField({
@@ -33,6 +34,7 @@ export function InputField({
   min,
   max,
   step,
+  style,
 }: InputFieldProps) {
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
@@ -51,6 +53,7 @@ export function InputField({
           min={min}
           max={max}
           step={step}
+          style={style}
           className={`
             w-full h-10 rounded-lg border border-ink-100 bg-surface-1
             text-ink-800 text-sm

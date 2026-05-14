@@ -33,6 +33,7 @@ export function createBilanVide(): BilanData {
       nom: '',
       prenom: '',
       dateNaissance: '',
+      lieuNaissance: '',
       nationalite: 'Française',
       situationProfessionnelle: '',
       professionDetaille: '',

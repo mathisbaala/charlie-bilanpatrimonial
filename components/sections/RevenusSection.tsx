@@ -28,17 +28,17 @@ export function RevenusSection() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-pos-50 rounded-xl p-4 border" style={{ borderColor: '#BBE5D0' }}>
-          <p className="text-xs text-pos-600 uppercase tracking-wide mb-1">Revenus mensuels</p>
-          <p className="text-xl font-semibold" style={{ color: '#1E7A4F' }}>{formatEuros(calculations.revenusMensuelsTotaux)}</p>
+        <div className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DC' }}>
+          <p className="text-xs text-ink-500 uppercase tracking-wide mb-2">Revenus mensuels</p>
+          <p className="font-serif text-xl text-ink-900">{formatEuros(calculations.revenusMensuelsTotaux)}</p>
         </div>
-        <div className="bg-neg-50 rounded-xl p-4 border" style={{ borderColor: '#F2C4CB' }}>
-          <p className="text-xs text-neg-600 uppercase tracking-wide mb-1">Charges mensuelles</p>
-          <p className="text-xl font-semibold" style={{ color: '#952033' }}>{formatEuros(calculations.chargesMensuellesTotales)}</p>
+        <div className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DC' }}>
+          <p className="text-xs text-ink-500 uppercase tracking-wide mb-2">Charges mensuelles</p>
+          <p className="font-serif text-xl text-ink-900">{formatEuros(calculations.chargesMensuellesTotales)}</p>
         </div>
-        <div className="bg-surface-2 rounded-xl p-4 border border-ink-100">
-          <p className="text-xs text-ink-600 uppercase tracking-wide mb-1">Capacité d&apos;épargne</p>
-          <p className="text-xl font-semibold" style={{ color: calculations.capaciteEpargneMensuelle >= 0 ? '#1E7A4F' : '#952033' }}>
+        <div className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DC' }}>
+          <p className="text-xs text-ink-500 uppercase tracking-wide mb-2">Capacité d&apos;épargne</p>
+          <p className="font-serif text-xl" style={{ color: calculations.capaciteEpargneMensuelle >= 0 ? '#1E7A4F' : '#952033' }}>
             {formatEuros(calculations.capaciteEpargneMensuelle)}
           </p>
         </div>

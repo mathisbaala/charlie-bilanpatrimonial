@@ -333,6 +333,7 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
     ['Nom', ident.nom],
     ['Prénom', ident.prenom],
     ['Date de naissance', ident.dateNaissance ? new Date(ident.dateNaissance).toLocaleDateString('fr-FR') : ''],
+    ['Lieu de naissance', ident.lieuNaissance],
     ['Nationalité', ident.nationalite],
     ['Résidence fiscale', ident.paysResidenceFiscale || 'France'],
     ['Situation professionnelle', ident.situationProfessionnelle ? (SITPRO_LABELS[ident.situationProfessionnelle] || ident.situationProfessionnelle) : ''],

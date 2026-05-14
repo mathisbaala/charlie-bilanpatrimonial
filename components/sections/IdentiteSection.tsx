@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { useBilan } from '@/context/BilanContext'
 import { InputField, SelectField, TextareaField } from '@/components/ui/FormField'
 import { Card } from '@/components/ui/Card'
@@ -61,7 +62,14 @@ export function IdentiteSection() {
             value={identite.dateNaissance}
             onChange={(v) => updateIdentite({ dateNaissance: v })}
             type="date"
+            style={{ colorScheme: 'light' } as React.CSSProperties}
             required
+          />
+          <InputField
+            label="Lieu de naissance"
+            value={identite.lieuNaissance}
+            onChange={(v) => updateIdentite({ lieuNaissance: v })}
+            placeholder="Ex: Paris (75), Lyon (69)"
           />
           <InputField
             label="Nationalité"

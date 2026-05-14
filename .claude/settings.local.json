@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m 'feat: add PDF generation with BilanPDF and fix number formatting *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(mkdir -p \"/Users/mathisbaala/Projects/charlie annexes/charlie-bilanpatrimonial/docs/superpowers/specs\")",
+      "Bash(git commit -m 'docs: spec bilan patrimonial premium CGP *)",
+      "Bash(git commit *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Skill(browse)",
+      "Skill(browse:*)",
+      "Bash(pdftoppm -r 150 -png /tmp/bilan_v2.pdf /tmp/bv2)",
+      "Bash(pdftoppm -r 120 /tmp/bilan_sophie2.pdf /tmp/bilan2_page)",
+      "Bash(python3)",
+      "Bash(curl -s -X POST http://localhost:3001/api/pdf -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(echo \"Status: $?\")",
+      "Bash(pdftoppm -r 120 /tmp/bilan3.pdf /tmp/bilan3_page)",
+      "Bash(curl -s -X POST http://localhost:3000/api/pdf -H 'Content-Type: application/json' -d @/tmp/bilan_payload.json -o /tmp/bilan_test.pdf)",
+      "Bash(echo \"Started dev server PID: $!\")",
+      "Bash(curl -s http://localhost:3000 -o /dev/null -w \"%{http_code}\")",
+      "Bash(curl -s -X POST http://localhost:3001/api/pdf -H 'Content-Type: application/json' -d @/tmp/bilan_payload.json -o /tmp/bilan_test.pdf)",
+      "Bash(pdftoppm -r 120 /tmp/bilan_test.pdf /tmp/bilan_pages)",
+      "Bash(git stash *)",
+      "Bash(curl -s -X POST http://localhost:3001/api/pdf -H 'Content-Type: application/json' -d @/tmp/bilan_payload.json -o /tmp/bilan_test2.pdf)",
+      "Bash(curl -s -X POST http://localhost:3001/api/pdf -H 'Content-Type: application/json' -d @/tmp/bilan_payload.json)",
+      "Bash(python3 -c \"import sys; data=sys.stdin.read\\(\\); print\\(data[:500] if len\\(data\\)<2000 else 'LARGE RESPONSE'\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(pdftoppm -r 120 /tmp/bilan_test2.pdf /tmp/bilan2_pages)",
+      "Bash(npm install *)",
+      "Bash(ls /Users/mathisbaala/Desktop/CHARLIE/)",
+      "Bash(cp \"/Users/mathisbaala/Desktop/CHARLIE/charlie-favicon-no-background.png\" \"/Users/mathisbaala/Projects/charlie annexes/charlie-bilanpatrimonial/public/charlie-favicon.png\")",
+      "Skill(design-review)",
+      "Skill(design-review:*)"
+    ]
+  }
+}
