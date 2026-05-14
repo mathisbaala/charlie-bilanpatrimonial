@@ -3,8 +3,9 @@
 import { useBilan } from '@/context/BilanContext'
 import { Card } from '@/components/ui/Card'
 import { SectionHeader } from '@/components/ui/SectionHeader'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { Shield } from 'lucide-react'
-import type { ProfilRisqueResultat } from '@/lib/types'
+import type { ProfilRisqueResultat, ToleranceIlliquidite, ClassificationClient } from '@/lib/types'
 
 interface ChoiceButtonProps {
   selected: boolean
@@ -57,7 +58,7 @@ const PROFIL_DESCRIPTIONS: Record<ProfilRisqueResultat, { label: string; color: 
 }
 
 export function ProfilRisqueSection() {
-  const { bilan, updateProfilRisque } = useBilan()
+  const { bilan, updateProfilRisque, calculations } = useBilan()
   const { profilRisque } = bilan
 
   const questions = [
@@ -115,6 +116,20 @@ export function ProfilRisqueSection() {
 
   const allAnswered = questions.every(q => !!profilRisque[q.key])
 
+  const illiquiditeChoices: Array<{ value: ToleranceIlliquidite; label: string }> = [
+    { value: 'moins_10', label: 'Moins de 10 %' },
+    { value: '10_30', label: '10 à 30 %' },
+    { value: '30_60', label: '30 à 60 %' },
+    { value: 'plus_60', label: 'Plus de 60 %' },
+  ]
+
+  const classificationOptions: Array<{ value: ClassificationClient | ''; label: string }> = [
+    { value: '', label: '—' },
+    { value: 'non_professionnel', label: 'Client non professionnel' },
+    { value: 'professionnel', label: 'Client professionnel' },
+    { value: 'contrepartie_eligible', label: 'Contrepartie éligible' },
+  ]
+
   return (
     <div>
       <SectionHeader
@@ -124,6 +139,37 @@ export function ProfilRisqueSection() {
       />
 
       <div className="space-y-4">
+
+        {/* Addition 1: Classification client */}
+        <Card>
+          <div className="flex items-center gap-1 mb-3">
+            <p className="text-sm font-medium text-ink-800">Classification client</p>
+            <Tooltip content="Défaut : Non professionnel. La requalification en Professionnel nécessite de remplir 2 des 3 critères : portefeuille > 500K€, opérations significatives, expérience professionnelle." />
+          </div>
+          <select
+            value={profilRisque.classificationClient}
+            onChange={(e) => updateProfilRisque({ classificationClient: e.target.value as ClassificationClient | '' })}
+            className="w-full rounded-xl border border-ink-100 bg-surface-1 px-3 py-2 text-sm text-ink-800 focus:outline-none focus:ring-2 focus:ring-navy-300 transition"
+          >
+            {classificationOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          {profilRisque.classificationClient === 'professionnel' && (
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-ink-600 mb-1">Justification de la requalification</label>
+              <textarea
+                value={profilRisque.justificationClassification}
+                onChange={(e) => updateProfilRisque({ justificationClassification: e.target.value })}
+                rows={3}
+                placeholder="Précisez les critères remplis justifiant la classification professionnelle..."
+                className="w-full rounded-xl border border-ink-100 bg-surface-1 px-3 py-2 text-sm text-ink-800 focus:outline-none focus:ring-2 focus:ring-navy-300 transition resize-none"
+              />
+            </div>
+          )}
+        </Card>
+
+        {/* Questions 1–5 */}
         {questions.map((q, i) => (
           <Card key={q.key}>
             <p className="text-sm font-medium text-ink-800 mb-3">
@@ -144,6 +190,27 @@ export function ProfilRisqueSection() {
           </Card>
         ))}
 
+        {/* Addition 2: Question 6 — tolérance à l'illiquidité */}
+        <Card>
+          <div className="flex items-center gap-1 mb-3">
+            <p className="text-sm font-medium text-ink-800">
+              <span className="text-ink-400 mr-2">6.</span>
+              Quelle part de votre patrimoine peut être bloquée sans possibilité de sortie immédiate ?
+            </p>
+            <Tooltip content="Part du patrimoine pouvant être bloquée sans possibilité de sortie immédiate. Ouvre l'accès aux SCPI, private equity, FCPI." />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {illiquiditeChoices.map((choice) => (
+              <ChoiceButton
+                key={choice.value}
+                selected={profilRisque.toleranceIlliquidite === choice.value}
+                onClick={() => updateProfilRisque({ toleranceIlliquidite: choice.value })}
+                label={choice.label}
+              />
+            ))}
+          </div>
+        </Card>
+
         {allAnswered && profilRisque.resultat && (
           <div
             className="p-5 rounded-xl border-2"
@@ -163,6 +230,47 @@ export function ProfilRisqueSection() {
             </p>
           </div>
         )}
+
+        {/* Addition 3: Situation financière MIF2 confirmée */}
+        <Card>
+          <div className="mb-4">
+            <p className="text-sm font-semibold text-ink-800">Situation financière MIF2 — à confirmer avec le client</p>
+            <p className="text-xs text-ink-500 mt-0.5">Données issues des sections Revenus et Actif — ajustez si nécessaire</p>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-ink-600 mb-1">Revenu annuel confirmé (€)</label>
+              <input
+                type="number"
+                value={profilRisque.revenuAnnuelConfirme || calculations.revenusFoyerAnnuels}
+                onChange={(e) => updateProfilRisque({ revenuAnnuelConfirme: Number(e.target.value) })}
+                className="w-full rounded-xl border border-ink-100 bg-surface-1 px-3 py-2 text-sm text-ink-800 focus:outline-none focus:ring-2 focus:ring-navy-300 transition"
+                min={0}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-ink-600 mb-1">Patrimoine financier (€)</label>
+              <input
+                type="number"
+                value={profilRisque.patrimoineFinancierConfirme || calculations.totalActifFinancier}
+                onChange={(e) => updateProfilRisque({ patrimoineFinancierConfirme: Number(e.target.value) })}
+                className="w-full rounded-xl border border-ink-100 bg-surface-1 px-3 py-2 text-sm text-ink-800 focus:outline-none focus:ring-2 focus:ring-navy-300 transition"
+                min={0}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-ink-600 mb-1">Charges fixes (€/an)</label>
+              <input
+                type="number"
+                value={profilRisque.chargesFixesConfirmees || Math.round(calculations.chargesMensuellesTotales * 12)}
+                onChange={(e) => updateProfilRisque({ chargesFixesConfirmees: Number(e.target.value) })}
+                className="w-full rounded-xl border border-ink-100 bg-surface-1 px-3 py-2 text-sm text-ink-800 focus:outline-none focus:ring-2 focus:ring-navy-300 transition"
+                min={0}
+              />
+            </div>
+          </div>
+        </Card>
+
       </div>
     </div>
   )
