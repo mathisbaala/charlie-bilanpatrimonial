@@ -1,15 +1,17 @@
 'use client'
 
 import { useBilan } from '@/context/BilanContext'
-import { InputField } from '@/components/ui/FormField'
+import { InputField, SelectField } from '@/components/ui/FormField'
 import { Card } from '@/components/ui/Card'
 import { SectionHeader } from '@/components/ui/SectionHeader'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { formatEuros } from '@/lib/calculations'
-import { TrendingUp } from 'lucide-react'
+import { TrendingUp, Users } from 'lucide-react'
 
 export function RevenusSection() {
   const { bilan, calculations, updateRevenusCharges } = useBilan()
   const { revenus, charges } = bilan.revenusCharges
+  const conjoint = bilan.situationFamiliale.conjoint
 
   const updateRev = (patch: Partial<typeof revenus>) =>
     updateRevenusCharges({ revenus: { ...revenus, ...patch } })
@@ -52,10 +54,54 @@ export function RevenusSection() {
             <InputField label="Salaires nets" value={revenus.salaireNet || ''} onChange={(v) => updateRev({ salaireNet: parseFloat(v) || 0 })} type="number" suffix="€/an" />
             <InputField label="BIC / BNC (TNS, libéraux)" value={revenus.bicBnc || ''} onChange={(v) => updateRev({ bicBnc: parseFloat(v) || 0 })} type="number" suffix="€/an" />
             <InputField label="Revenus fonciers" value={revenus.revenusFonciers || ''} onChange={(v) => updateRev({ revenusFonciers: parseFloat(v) || 0 })} type="number" suffix="€/an" />
+
+            {/* Régime foncier — visible uniquement si revenus fonciers > 0 */}
+            {revenus.revenusFonciers > 0 && (
+              <div className="pl-3 border-l-2 border-ink-100 space-y-4">
+                <div>
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <span className="text-xs font-medium text-ink-600 uppercase tracking-wide">Régime foncier</span>
+                    <Tooltip content="Abattement forfaitaire de 30 % sur les loyers bruts. Plafonné à 15 000 €/an de revenus fonciers." />
+                  </div>
+                  <SelectField
+                    label=""
+                    value={revenus.regimeFoncier}
+                    onChange={(v) => updateRev({ regimeFoncier: v as 'micro' | 'reel' | '' })}
+                    options={[
+                      { value: 'micro', label: 'Micro-foncier' },
+                      { value: 'reel', label: 'Réel' },
+                    ]}
+                    placeholder="—"
+                    className="-mt-1.5"
+                  />
+                </div>
+                {revenus.regimeFoncier === 'reel' && (
+                  <InputField
+                    label="Charges déductibles foncières"
+                    value={revenus.chargesFoncieresDed || ''}
+                    onChange={(v) => updateRev({ chargesFoncieresDed: parseFloat(v) || 0 })}
+                    type="number"
+                    suffix="€/an"
+                  />
+                )}
+              </div>
+            )}
+
             <InputField label="Dividendes" value={revenus.dividendes || ''} onChange={(v) => updateRev({ dividendes: parseFloat(v) || 0 })} type="number" suffix="€/an" />
             <InputField label="Plus-values" value={revenus.plusValues || ''} onChange={(v) => updateRev({ plusValues: parseFloat(v) || 0 })} type="number" suffix="€/an" />
             <InputField label="Pensions / retraites" value={revenus.pensions || ''} onChange={(v) => updateRev({ pensions: parseFloat(v) || 0 })} type="number" suffix="€/an" />
             <InputField label="Autres revenus" value={revenus.autresRevenus || ''} onChange={(v) => updateRev({ autresRevenus: parseFloat(v) || 0 })} type="number" suffix="€/an" />
+
+            {/* Avantages en nature — toujours visible */}
+            <InputField
+              label="Avantages en nature"
+              value={revenus.avantagesNature || ''}
+              onChange={(v) => updateRev({ avantagesNature: parseFloat(v) || 0 })}
+              type="number"
+              suffix="€/an"
+              placeholder="Véhicule, logement de fonction..."
+            />
+
             <div className="pt-3 border-t border-ink-100 flex justify-between">
               <span className="text-sm text-ink-600">Total annuel</span>
               <span className="text-sm font-semibold" style={{ color: '#1E7A4F' }}>
@@ -95,6 +141,32 @@ export function RevenusSection() {
           )}
         </Card>
       </div>
+
+      {/* Revenus du conjoint — visible uniquement si conjoint renseigné */}
+      {conjoint !== null && (
+        <Card className="mt-4">
+          <h3 className="text-sm font-semibold text-ink-800 mb-4 flex items-center gap-2">
+            <Users size={14} className="text-ink-400" />
+            Revenus du conjoint — {conjoint.prenom || 'Conjoint'}
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField
+              label="Salaire net"
+              value={revenus.salaireNetConjoint || ''}
+              onChange={(v) => updateRev({ salaireNetConjoint: parseFloat(v) || 0 })}
+              type="number"
+              suffix="€/an"
+            />
+            <InputField
+              label="Autres revenus"
+              value={revenus.autresRevenusConjoint || ''}
+              onChange={(v) => updateRev({ autresRevenusConjoint: parseFloat(v) || 0 })}
+              type="number"
+              suffix="€/an"
+            />
+          </div>
+        </Card>
+      )}
     </div>
   )
 }
