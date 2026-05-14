@@ -4,7 +4,6 @@ import { useBilan } from '@/context/BilanContext'
 import type { SectionId } from '@/context/BilanContext'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import type { BilanData } from '@/lib/types'
-import { formatEuros } from '@/lib/calculations'
 import {
   User, Users, Building2, CreditCard, TrendingUp,
   Calculator, Shield, Target, Settings, Upload
@@ -83,7 +82,7 @@ export function Sidebar({
   onOpenCabinet: () => void
   onOpenImport: () => void
 }) {
-  const { bilan, calculations, activeSection, setActiveSection } = useBilan()
+  const { bilan, activeSection, setActiveSection } = useBilan()
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 flex flex-col z-40" style={{
@@ -96,12 +95,12 @@ export function Sidebar({
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 flex-shrink-0">
             <Image
-              src="/charlie-logo.svg"
+              src="/charlie-favicon.png"
               alt="Charlie"
               width={32}
               height={32}
               className="w-8 h-8"
-              style={{ filter: 'invert(1) sepia(1) saturate(0) brightness(2)' }}
+              style={{ filter: 'brightness(0) invert(1)' }}
             />
           </div>
           <div>
@@ -150,26 +149,6 @@ export function Sidebar({
           )
         })}
       </nav>
-
-      {/* Récap patrimonial */}
-      <div className="px-4 py-3 space-y-1.5" style={{ borderTop: '1px solid #2E2B25' }}>
-        <div className="flex justify-between items-center">
-          <span className="text-xs" style={{ color: '#5A5650' }}>Total Actif</span>
-          <span className="text-xs font-medium" style={{ color: '#8A8680' }}>{formatEuros(calculations.totalActif)}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-xs" style={{ color: '#5A5650' }}>Total Passif</span>
-          <span className="text-xs font-medium" style={{ color: '#8A8680' }}>{formatEuros(calculations.totalPassif)}</span>
-        </div>
-        <div className="flex justify-between items-center pt-1" style={{ borderTop: '1px solid #2E2B25' }}>
-          <span className="text-xs font-medium" style={{ color: '#C09F65' }}>Patrimoine Net</span>
-          <span className="text-sm font-semibold" style={{
-            color: calculations.patrimoineNet >= 0 ? '#5A9E6F' : '#B52D42'
-          }}>
-            {formatEuros(calculations.patrimoineNet)}
-          </span>
-        </div>
-      </div>
 
       {/* Actions */}
       <div className="px-4 py-3 space-y-1.5" style={{ borderTop: '1px solid #2E2B25' }}>
