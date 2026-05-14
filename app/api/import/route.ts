@@ -201,8 +201,9 @@ export async function POST(request: NextRequest) {
 
       if (mime === 'application/pdf' || file.name.endsWith('.pdf')) {
         try {
-          const pdfParse = (await import('pdf-parse')).default
-          const data = await pdfParse(buffer)
+          const mod = await import('pdf-parse')
+          const pdfParse = (mod as unknown as { default: typeof mod }).default ?? mod
+          const data = await (pdfParse as (buf: Buffer) => Promise<{ text: string }>)(buffer)
           text = data.text
         } catch {
           return NextResponse.json({ error: 'Impossible de lire ce PDF. Essayez de copier-coller le texte.' }, { status: 422 })
