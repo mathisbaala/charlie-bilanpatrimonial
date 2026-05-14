@@ -31,7 +31,8 @@ function computeSectionCompletude(sectionId: SectionId, bilan: BilanData): numbe
       return (hasImmo || hasFinancier) ? 100 : 0
     }
     case 'passif': {
-      if (bilan.passif.credits.length === 0) return 100
+      // 0% si aucune donnée saisie — l'utilisateur doit confirmer explicitement qu'il n'a pas de dettes
+      if (bilan.passif.credits.length === 0) return 0
       const complete = bilan.passif.credits.every(c => c.capitalRestantDu > 0 && c.mensualite > 0)
       return complete ? 100 : 50
     }
@@ -40,8 +41,11 @@ function computeSectionCompletude(sectionId: SectionId, bilan: BilanData): numbe
       return (r.salaireNet > 0 || r.bicBnc > 0 || r.pensions > 0) ? 100 : 0
     }
     case 'fiscalite': {
-      const fields = [bilan.fiscalite.revenuImposable > 0, bilan.fiscalite.nombrePartsQF > 0]
-      return Math.round(fields.filter(Boolean).length / fields.length * 100)
+      // nombrePartsQF vaut 1 par défaut — on ne le compte que si revenuImposable est aussi renseigné
+      const hasRevenu = bilan.fiscalite.revenuImposable > 0
+      const hasParts = bilan.fiscalite.nombrePartsQF > 1 || (hasRevenu && bilan.fiscalite.nombrePartsQF > 0)
+      if (!hasRevenu && !hasParts) return 0
+      return Math.round([hasRevenu, hasParts].filter(Boolean).length / 2 * 100)
     }
     case 'profil_risque': {
       const pr = bilan.profilRisque
