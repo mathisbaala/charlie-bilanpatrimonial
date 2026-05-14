@@ -3,6 +3,7 @@
 import { useBilan } from '@/context/BilanContext'
 import type { SectionId } from '@/context/BilanContext'
 import { ProgressRing } from '@/components/ui/ProgressRing'
+import type { BilanData } from '@/lib/types'
 import { formatEuros } from '@/lib/calculations'
 import {
   User, Users, Building2, CreditCard, TrendingUp,
@@ -15,72 +16,60 @@ const PDFButton = dynamic(
   { ssr: false, loading: () => null }
 )
 
-const SECTIONS: { id: SectionId; label: string; icon: React.ReactNode; getProgress: (bilan: any) => number }[] = [
-  {
-    id: 'identite',
-    label: 'Identité',
-    icon: <User size={16} />,
-    getProgress: (bilan) => {
-      const fields = [bilan.identite.nom, bilan.identite.prenom, bilan.identite.dateNaissance, bilan.identite.situationProfessionnelle]
-      return Math.round((fields.filter(Boolean).length / fields.length) * 100)
-    },
-  },
-  {
-    id: 'familiale',
-    label: 'Situation familiale',
-    icon: <Users size={16} />,
-    getProgress: (bilan) => (bilan.situationFamiliale.statutMarital ? 100 : 0),
-  },
-  {
-    id: 'actif',
-    label: 'Actif',
-    icon: <Building2 size={16} />,
-    getProgress: (bilan) => {
-      const total = bilan.actif.immobilier.length + bilan.actif.financier.length + bilan.actif.professionnel.length
-      return total > 0 ? 100 : 0
-    },
-  },
-  {
-    id: 'passif',
-    label: 'Passif',
-    icon: <CreditCard size={16} />,
-    getProgress: (bilan) => (bilan.passif.credits.length > 0 || bilan.passif.autresDettes > 0 ? 100 : 0),
-  },
-  {
-    id: 'revenus',
-    label: 'Revenus & Charges',
-    icon: <TrendingUp size={16} />,
-    getProgress: (bilan) => {
+function computeSectionCompletude(sectionId: SectionId, bilan: BilanData): number {
+  switch (sectionId) {
+    case 'identite': {
+      const fields = [bilan.identite.civilite, bilan.identite.nom, bilan.identite.prenom, bilan.identite.dateNaissance, bilan.identite.situationProfessionnelle]
+      return Math.round(fields.filter(Boolean).length / fields.length * 100)
+    }
+    case 'familiale':
+      return bilan.situationFamiliale.statutMarital ? 100 : 0
+    case 'actif': {
+      const hasImmo = bilan.actif.immobilier.length > 0
+      const hasFinancier = bilan.actif.financier.length > 0
+      return (hasImmo || hasFinancier) ? 100 : 0
+    }
+    case 'passif': {
+      if (bilan.passif.credits.length === 0) return 100
+      const complete = bilan.passif.credits.every(c => c.capitalRestantDu > 0 && c.mensualite > 0)
+      return complete ? 100 : 50
+    }
+    case 'revenus': {
       const r = bilan.revenusCharges.revenus
-      const total = r.salaireNet + r.bicBnc + r.revenusFonciers + r.dividendes + r.pensions + r.autresRevenus
-      return total > 0 ? 100 : 0
-    },
-  },
-  {
-    id: 'fiscalite',
-    label: 'Fiscalité',
-    icon: <Calculator size={16} />,
-    getProgress: (bilan) => (bilan.fiscalite.revenuImposable > 0 ? 100 : 0),
-  },
-  {
-    id: 'profil_risque',
-    label: 'Profil de risque',
-    icon: <Shield size={16} />,
-    getProgress: (bilan) => {
+      return (r.salaireNet > 0 || r.bicBnc > 0 || r.pensions > 0) ? 100 : 0
+    }
+    case 'fiscalite': {
+      const fields = [bilan.fiscalite.revenuImposable > 0, bilan.fiscalite.nombrePartsQF > 0]
+      return Math.round(fields.filter(Boolean).length / fields.length * 100)
+    }
+    case 'profil_risque': {
       const pr = bilan.profilRisque
-      const filled = [pr.objectif, pr.horizon, pr.experience, pr.capacitePertes, pr.reactionBaisse].filter(Boolean).length
-      return Math.round((filled / 5) * 100)
-    },
-  },
-  {
-    id: 'objectifs',
-    label: 'Objectifs',
-    icon: <Target size={16} />,
-    getProgress: (bilan) => {
-      const selected = bilan.objectifs.objectifs.filter((o: any) => o.selected).length
-      return selected > 0 ? 100 : 0
-    },
-  },
+      const answered = [pr.objectif, pr.horizon, pr.experience, pr.capacitePertes, pr.reactionBaisse, pr.toleranceIlliquidite, pr.classificationClient].filter(Boolean).length
+      return Math.round(answered / 7 * 100)
+    }
+    case 'objectifs':
+      return bilan.objectifs.objectifs.some(o => o.selected) ? 100 : 0
+    default:
+      return 0
+  }
+}
+
+function ringColor(completude: number): string {
+  if (completude === 100) return '#22c55e'
+  if (completude >= 66) return '#A8874A'
+  if (completude >= 33) return '#A8874A'
+  return '#d1c5b0'
+}
+
+const SECTIONS: { id: SectionId; label: string; icon: React.ReactNode }[] = [
+  { id: 'identite', label: 'Identité', icon: <User size={16} /> },
+  { id: 'familiale', label: 'Situation familiale', icon: <Users size={16} /> },
+  { id: 'actif', label: 'Actif', icon: <Building2 size={16} /> },
+  { id: 'passif', label: 'Passif', icon: <CreditCard size={16} /> },
+  { id: 'revenus', label: 'Revenus & Charges', icon: <TrendingUp size={16} /> },
+  { id: 'fiscalite', label: 'Fiscalité', icon: <Calculator size={16} /> },
+  { id: 'profil_risque', label: 'Profil de risque', icon: <Shield size={16} /> },
+  { id: 'objectifs', label: 'Objectifs', icon: <Target size={16} /> },
 ]
 
 export function Sidebar({ onOpenCabinet }: { onOpenCabinet: () => void }) {
@@ -105,7 +94,8 @@ export function Sidebar({ onOpenCabinet }: { onOpenCabinet: () => void }) {
       <nav className="flex-1 overflow-y-auto py-3">
         {SECTIONS.map((section) => {
           const isActive = activeSection === section.id
-          const progress = section.getProgress(bilan)
+          const completude = computeSectionCompletude(section.id, bilan)
+          const color = ringColor(completude)
           return (
             <button
               key={section.id}
@@ -123,12 +113,20 @@ export function Sidebar({ onOpenCabinet }: { onOpenCabinet: () => void }) {
                 {section.icon}
               </div>
               <span className="flex-1 text-sm font-medium truncate">{section.label}</span>
-              <ProgressRing
-                progress={progress}
-                size={22}
-                strokeWidth={2.5}
-                color={progress === 100 ? '#1E7A4F' : '#A8874A'}
-              />
+              <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 32 }}>
+                <ProgressRing
+                  progress={completude}
+                  size={32}
+                  strokeWidth={3}
+                  color={color}
+                />
+                <span
+                  className="absolute text-[8px] font-bold leading-none"
+                  style={{ color }}
+                >
+                  {completude}%
+                </span>
+              </div>
             </button>
           )
         })}
