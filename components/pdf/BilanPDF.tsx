@@ -235,12 +235,18 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
       {fam.donations.length > 0 && (
         <View style={{ marginBottom: 16 }}>
           <Text style={{ fontSize: 11, fontWeight: 600, color: C.NAVY_DARK, marginBottom: 8 }}>DONATIONS ANTÉRIEURES</Text>
-          {fam.donations.map((don, i) => (
-            <Text key={i} style={{ fontSize: 9, color: C.INK, fontFamily: 'Helvetica', marginBottom: 3 }}>
-              {don.type} — {fmtEur(don.montant)} à {don.beneficiaire}
-              {don.date ? ` (${new Date(don.date).toLocaleDateString('fr-FR')})` : ''}
-            </Text>
-          ))}
+          {fam.donations.map((don, i) => {
+            const donTypeLabel: Record<string, string> = {
+              manuel: 'Donation manuelle', assurance_vie: 'Via assurance-vie',
+              demembrement: 'Démembrement', autre: 'Autre',
+            }
+            return (
+              <Text key={i} style={{ fontSize: 9, color: C.INK, fontFamily: 'Helvetica', marginBottom: 3 }}>
+                {donTypeLabel[don.type] || don.type} — {fmtEur(don.montant)} à {don.beneficiaire}
+                {don.date ? ` (${new Date(don.date).toLocaleDateString('fr-FR')})` : ''}
+              </Text>
+            )
+          })}
         </View>
       )}
 
@@ -261,39 +267,6 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
 // Actif/Passif summary page
 function BilanPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
-
-  // Pie chart data
-  const totalActif = calc.totalActif
-  const immoRatio = totalActif > 0 ? calc.totalActifImmobilier / totalActif : 0
-  const finRatio = totalActif > 0 ? calc.totalActifFinancier / totalActif : 0
-  const proRatio = totalActif > 0 ? calc.totalActifProfessionnel / totalActif : 0
-
-  // Simple pie chart using SVG arcs
-  function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
-    const rad = ((deg - 90) * Math.PI) / 180
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
-  }
-  function arc(cx: number, cy: number, r: number, start: number, end: number) {
-    if (end - start >= 360) end = 359.99
-    const s2 = polarToCartesian(cx, cy, r, start)
-    const e = polarToCartesian(cx, cy, r, end)
-    const large = end - start > 180 ? 1 : 0
-    return `M ${cx} ${cy} L ${s2.x} ${s2.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y} Z`
-  }
-
-  const segments = [
-    { ratio: immoRatio, color: C.NAVY_DARK, label: 'Immobilier', amount: calc.totalActifImmobilier },
-    { ratio: finRatio, color: C.GOLD, label: 'Financier', amount: calc.totalActifFinancier },
-    { ratio: proRatio, color: C.INK_MEDIUM, label: 'Professionnel', amount: calc.totalActifProfessionnel },
-  ].filter(seg => seg.ratio > 0)
-
-  let currentDeg = 0
-  const paths = segments.map(seg => {
-    const start = currentDeg
-    const end = currentDeg + seg.ratio * 360
-    currentDeg = end
-    return { ...seg, path: arc(50, 50, 40, start, end) }
-  })
 
   return (
     <Page size="A4" style={s.page}>
@@ -419,27 +392,6 @@ function BilanPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalc
         </View>
       </View>
 
-      {/* SVG Pie chart — only if we have actif */}
-      {paths.length > 0 && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
-          <Svg width={100} height={100} viewBox="0 0 100 100">
-            {paths.map((p, i) => (
-              <Path key={i} d={p.path} fill={p.color} />
-            ))}
-            <Circle cx={50} cy={50} r={24} fill={C.PARCHMENT} />
-          </Svg>
-          <View style={{ gap: 5 }}>
-            {segments.map((seg, i) => (
-              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: seg.color }} />
-                <Text style={{ fontSize: 9, color: C.INK_MEDIUM }}>
-                  {seg.label} — {fmtEur(seg.amount)} ({Math.round(seg.ratio * 100)} %)
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
     </Page>
   )
 }
@@ -447,6 +399,39 @@ function BilanPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalc
 // Revenus & Fiscalite page
 function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
+
+  // Pie chart data
+  const totalActif = calc.totalActif
+  const immoRatio = totalActif > 0 ? calc.totalActifImmobilier / totalActif : 0
+  const finRatio = totalActif > 0 ? calc.totalActifFinancier / totalActif : 0
+  const proRatio = totalActif > 0 ? calc.totalActifProfessionnel / totalActif : 0
+
+  function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
+    const rad = ((deg - 90) * Math.PI) / 180
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
+  }
+  function arc(cx: number, cy: number, r: number, start: number, end: number) {
+    if (end - start >= 360) end = 359.99
+    const s2 = polarToCartesian(cx, cy, r, start)
+    const e = polarToCartesian(cx, cy, r, end)
+    const large = end - start > 180 ? 1 : 0
+    return `M ${cx} ${cy} L ${s2.x} ${s2.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y} Z`
+  }
+
+  const segments = [
+    { ratio: immoRatio, color: C.NAVY_DARK, label: 'Immobilier', amount: calc.totalActifImmobilier },
+    { ratio: finRatio, color: C.GOLD, label: 'Financier', amount: calc.totalActifFinancier },
+    { ratio: proRatio, color: C.INK_MEDIUM, label: 'Professionnel', amount: calc.totalActifProfessionnel },
+  ].filter(seg => seg.ratio > 0)
+
+  let currentDeg = 0
+  const pieSegments = segments.map(seg => {
+    const start = currentDeg
+    const end = currentDeg + seg.ratio * 360
+    currentDeg = end
+    return { ...seg, path: arc(50, 50, 40, start, end) }
+  })
+
   const r = bilan.revenusCharges.revenus
   const c = bilan.revenusCharges.charges
   const f = bilan.fiscalite
@@ -473,6 +458,34 @@ function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCa
       <PageHeader cabinet={cabinet} clientName={clientName} />
 
       <Text style={s.sectionTitle}>Revenus, Charges & Fiscalite</Text>
+
+      {/* SVG Pie chart — Répartition du patrimoine */}
+      {pieSegments.length > 0 && (
+        <View style={{ marginBottom: 20, padding: 14, backgroundColor: C.PANEL, borderRadius: 8 }}>
+          <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.NAVY_DARK, marginBottom: 12 }}>RÉPARTITION DU PATRIMOINE</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 28 }}>
+            <Svg width={120} height={120} viewBox="0 0 100 100">
+              {pieSegments.map((p, i) => (
+                <Path key={i} d={p.path} fill={p.color} />
+              ))}
+              <Circle cx={50} cy={50} r={26} fill={C.PARCHMENT} />
+            </Svg>
+            <View style={{ gap: 10 }}>
+              {segments.map((seg, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: seg.color }} />
+                  <View>
+                    <Text style={{ fontSize: 10, color: C.INK, fontFamily: 'Helvetica-Bold' }}>
+                      {seg.label} — {Math.round(seg.ratio * 100)} %
+                    </Text>
+                    <Text style={{ fontSize: 9, color: C.INK_MEDIUM }}>{fmtEur(seg.amount)}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* Revenus foyer annuels badge */}
       {calc.revenusFoyerAnnuels > 0 && (
@@ -593,10 +606,35 @@ function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Pa
     prudent: C.POS, equilibre: C.GOLD, dynamique: C.NAVY, offensif: C.INK
   }
   const PROFIL_LABELS: Record<string, string> = {
-    prudent: 'Prudent', equilibre: 'Equilibre', dynamique: 'Dynamique', offensif: 'Offensif'
+    prudent: 'Prudent', equilibre: 'Equilibré', dynamique: 'Dynamique', offensif: 'Offensif'
   }
   const PRIORITE_COLORS: Record<string, string> = {
     haute: C.NEG, moyenne: C.GOLD, basse: C.INK_LIGHT
+  }
+  const OBJECTIF_LABELS: Record<string, string> = {
+    conservation: 'Conservation du capital', revenu: 'Recherche de revenus',
+    croissance: 'Croissance à long terme', speculation: 'Spéculation',
+  }
+  const HORIZON_LABELS: Record<string, string> = {
+    moins_1an: 'Moins d\'1 an', '1_3ans': '1 à 3 ans',
+    '3_5ans': '3 à 5 ans', plus_5ans: 'Plus de 5 ans',
+  }
+  const EXP_LABELS: Record<string, string> = {
+    debutant: 'Débutant', intermediaire: 'Intermédiaire',
+    experimente: 'Expérimenté', expert: 'Expert',
+  }
+  const ILLIQ_LABELS: Record<string, string> = {
+    moins_10: 'Moins de 10 %', '10_30': '10 à 30 %',
+    '30_60': '30 à 60 %', plus_60: 'Plus de 60 %',
+  }
+  const CLASS_LABELS: Record<string, string> = {
+    non_professionnel: 'Client non professionnel',
+    professionnel: 'Client professionnel',
+    contrepartie_eligible: 'Contrepartie éligible',
+  }
+  const DELAI_LABELS: Record<string, string> = {
+    immediat: 'Immédiat', '1_3ans': '1 à 3 ans', '3_5ans': '3 à 5 ans',
+    '5_10ans': '5 à 10 ans', '10_15ans': '10 à 15 ans', plus_15ans: 'Plus de 15 ans',
   }
 
   return (
@@ -613,11 +651,11 @@ function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Pa
             {PROFIL_LABELS[pr.resultat] || pr.resultat}
           </Text>
           <View style={{ flexDirection: 'row', gap: 20, flexWrap: 'wrap' }}>
-            {pr.objectif ? <Text style={{ fontSize: 8, color: C.INK_MEDIUM }}>Objectif: {pr.objectif}</Text> : null}
-            {pr.horizon ? <Text style={{ fontSize: 8, color: C.INK_MEDIUM }}>Horizon: {pr.horizon.replace(/_/g, ' ')}</Text> : null}
-            {pr.experience ? <Text style={{ fontSize: 8, color: C.INK_MEDIUM }}>Experience: {pr.experience}</Text> : null}
-            {pr.toleranceIlliquidite ? <Text style={{ fontSize: 8, color: C.INK_MEDIUM }}>Illiquidité tolérée: {pr.toleranceIlliquidite.replace(/_/g, ' ')}</Text> : null}
-            {pr.classificationClient ? <Text style={{ fontSize: 8, color: C.INK_MEDIUM }}>Classification: {pr.classificationClient.replace(/_/g, ' ')}</Text> : null}
+            {pr.objectif ? <Text style={{ fontSize: 8, color: C.INK_MEDIUM }}>Objectif : {OBJECTIF_LABELS[pr.objectif] || pr.objectif}</Text> : null}
+            {pr.horizon ? <Text style={{ fontSize: 8, color: C.INK_MEDIUM }}>Horizon : {HORIZON_LABELS[pr.horizon] || pr.horizon}</Text> : null}
+            {pr.experience ? <Text style={{ fontSize: 8, color: C.INK_MEDIUM }}>Expérience : {EXP_LABELS[pr.experience] || pr.experience}</Text> : null}
+            {pr.toleranceIlliquidite ? <Text style={{ fontSize: 8, color: C.INK_MEDIUM }}>Illiquidité : {ILLIQ_LABELS[pr.toleranceIlliquidite] || pr.toleranceIlliquidite}</Text> : null}
+            {pr.classificationClient ? <Text style={{ fontSize: 8, color: C.INK_MEDIUM }}>{CLASS_LABELS[pr.classificationClient] || pr.classificationClient}</Text> : null}
           </View>
           {(pr.revenuAnnuelConfirme > 0 || pr.patrimoineFinancierConfirme > 0 || pr.chargesFixesConfirmees > 0) && (
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: C.BORDER, flexWrap: 'wrap' }}>
@@ -644,7 +682,7 @@ function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Pa
             {objectifsSelected.map((obj) => {
               const meta: string[] = []
               if (obj.montantCible > 0) meta.push(fmtEur(obj.montantCible))
-              if (obj.delaiCible) meta.push(obj.delaiCible.replace(/_/g, ' '))
+              if (obj.delaiCible) meta.push(DELAI_LABELS[obj.delaiCible] || obj.delaiCible.replace(/_/g, ' '))
               return (
                 <View key={obj.id} style={{ flexDirection: 'row', alignItems: 'center', padding: 8, backgroundColor: C.WHITE, borderRadius: 6, borderWidth: 1, borderColor: C.BORDER }}>
                   <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: obj.priorite ? PRIORITE_COLORS[obj.priorite] : C.INK_LIGHT, marginRight: 8 }} />

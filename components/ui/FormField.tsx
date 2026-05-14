@@ -55,7 +55,7 @@ export function InputField({
             w-full h-10 rounded-lg border border-ink-100 bg-surface-1
             text-ink-800 text-sm
             transition-colors duration-150
-            focus:outline-none focus:border-navy-600 focus:ring-2 focus:ring-navy-50
+            focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-100
             placeholder:text-ink-400
             ${prefix ? 'pl-8' : 'pl-3'}
             ${suffix ? 'pr-10' : 'pr-3'}
@@ -109,7 +109,7 @@ export function SelectField({
           w-full h-10 rounded-lg border border-ink-100 bg-surface-1
           text-ink-800 text-sm px-3
           transition-colors duration-150
-          focus:outline-none focus:border-navy-600 focus:ring-2 focus:ring-navy-50
+          focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-100
           appearance-none cursor-pointer
           ${!value ? 'text-ink-400' : ''}
         `}
@@ -160,7 +160,7 @@ export function TextareaField({
           w-full rounded-lg border border-ink-100 bg-surface-1
           text-ink-800 text-sm px-3 py-2.5
           transition-colors duration-150
-          focus:outline-none focus:border-navy-600 focus:ring-2 focus:ring-navy-50
+          focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-100
           placeholder:text-ink-400 resize-none
         `}
       />
@@ -190,7 +190,7 @@ export function ToggleField({ label, checked, onChange, hint, className = '' }: 
         onClick={() => onChange(!checked)}
         className={`
           relative inline-flex w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none
-          ${checked ? 'bg-navy-600' : 'bg-ink-200'}
+          ${checked ? 'bg-gold-500' : 'bg-ink-200'}
         `}
       >
         <span className={`
