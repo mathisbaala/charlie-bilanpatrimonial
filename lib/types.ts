@@ -6,33 +6,59 @@ export interface Identite {
   civilite: Civilite | ''
   nom: string
   prenom: string
-  dateNaissance: string  // ISO date string
+  dateNaissance: string
   nationalite: string
   situationProfessionnelle: SituationProfessionnelle | ''
+  professionDetaille: string           // ex: "Chirurgien, CHU Bordeaux"
   adresse: string
   codePostal: string
   ville: string
+  paysResidenceFiscale: string         // défaut "France"
   email: string
   telephone: string
+  isPEP: boolean                       // Personne Politiquement Exposée
+  descriptionPEP: string               // visible si isPEP = true
 }
 
 // Situation familiale
 export type StatutMarital = 'celibataire' | 'marie' | 'pacse' | 'concubinage' | 'divorce' | 'veuf'
 export type RegimeMatrimonial = 'communaute_legale' | 'separation_biens' | 'communaute_universelle' | 'participation_acquets'
 
+export interface Conjoint {
+  prenom: string
+  nom: string
+  dateNaissance: string
+  situationProfessionnelle: SituationProfessionnelle | ''
+}
+
 export interface Enfant {
   id: string
+  prenom: string
   age: number
   aCharge: boolean
+  lienParente: 'biologique' | 'adopte' | 'recompose' | ''
+}
+
+export interface Donation {
+  id: string
+  montant: number
+  date: string
+  beneficiaire: string
+  type: 'manuel' | 'assurance_vie' | 'demembrement' | 'autre'
 }
 
 export interface SituationFamiliale {
   statutMarital: StatutMarital | ''
-  regimeMatrimonial: RegimeMatrimonial | ''  // only if marie or pacse
+  regimeMatrimonial: RegimeMatrimonial | ''
+  dateUnion: string                    // date mariage ou PACS
+  conjoint: Conjoint | null
   nombreEnfants: number
   enfants: Enfant[]
   hasTestament: boolean
+  typeTestament: 'olographe' | 'authentique' | ''
+  dateTestament: string
   hasDonation: boolean
+  donations: Donation[]
   commentairesFamiliaux: string
 }
 
@@ -44,15 +70,23 @@ export interface BienImmobilier {
   type: TypeBienImmobilier
   libelle: string
   valeurEstimee: number
+  prixAcquisition: number              // pour plus-value latente
   dateAcquisition: string
   modeFinancement: 'comptant' | 'credit' | 'mixte' | ''
-  // for SCPI/OPCI
+  surface: number                      // m²
+  loyerMensuel: number                 // visible si type locatif
+  regimeFiscalFoncier: 'micro' | 'reel' | ''
+  chargesFoncieresDed: number          // si réel
   nombreParts?: number
   valeurLiquidative?: number
 }
 
 // Actif financier
-export type TypeActifFinancier = 'assurance_vie' | 'pea' | 'per' | 'compte_titres' | 'livret_a' | 'ldds' | 'lep' | 'crypto' | 'crowdfunding' | 'autre'
+export type TypeActifFinancier =
+  | 'assurance_vie' | 'pea' | 'per' | 'compte_titres'
+  | 'livret_a' | 'ldds' | 'lep'
+  | 'pel' | 'cel'
+  | 'crypto' | 'crowdfunding' | 'autre'
 
 export interface ActifFinancier {
   id: string
@@ -60,9 +94,14 @@ export interface ActifFinancier {
   libelle: string
   etablissement: string
   valeur: number
-  dateOuverture?: string
-  beneficiaires?: string  // for assurance-vie
-  originePER?: 'volontaire' | 'entreprise' | 'mixte'  // for PER
+  dateOuverture: string
+  beneficiaires: string
+  originePER: 'volontaire' | 'entreprise' | 'mixte' | ''
+  montantVersementsVolontairesPER: number
+  tauxEuros: number                    // AV : % fonds euros
+  tauxUC: number                       // AV : % UC
+  modeGestion: 'libre' | 'pilotee' | 'profilee' | ''
+  tauxRemunerationPEL: number          // PEL
 }
 
 // Actif professionnel
@@ -91,30 +130,39 @@ export interface Credit {
   etablissement: string
   capitalRestantDu: number
   tauxInteret: number
+  typeTaux: 'fixe' | 'variable' | 'mixte' | ''
   mensualite: number
   dateEcheance: string
   hasAssuranceEmprunteur: boolean
+  tauxADE: number                      // taux assurance emprunteur
+  couvertureADE: 'dc_ptia' | 'dc_ptia_itt' | 'tous_risques' | ''
+  garantie: 'hypotheque' | 'caution' | 'ppd' | 'autre' | ''
 }
 
 export interface Passif {
   credits: Credit[]
-  autresDettes: number  // other misc debts
+  autresDettes: number
   commentaires: string
 }
 
 // Revenus & Charges
 export interface Revenus {
   salaireNet: number
-  bicBnc: number  // self-employed income
+  bicBnc: number
   revenusFonciers: number
+  regimeFoncier: 'micro' | 'reel' | ''
+  chargesFoncieresDed: number
   dividendes: number
   plusValues: number
   pensions: number
   autresRevenus: number
+  avantagesNature: number
+  salaireNetConjoint: number
+  autresRevenusConjoint: number
 }
 
 export interface Charges {
-  remboursementsCredit: number  // total monthly loan repayments
+  remboursementsCredit: number
   chargesCopropriete: number
   pensionAlimentaire: number
   autresCharges: number
@@ -126,15 +174,21 @@ export interface RevenusCharges {
 }
 
 // Fiscalité
-export type RegimeFiscal = 'ir_bareme' | 'ir_flat_tax' | 'is'
+export interface Heritier {
+  id: string
+  lien: 'conjoint' | 'enfant' | 'petit_enfant' | 'autre'
+  prenom: string
+  abattementRestant: number            // défaut 100000 pour enfant, 31865 petit-enfant
+}
 
 export interface Fiscalite {
-  revenuImposable: number  // manually entered for TMI calc
-  nombrePartsQF: number  // quotient familial
-  hasIFI: boolean
-  actifImmobilierNetIFI: number  // if hasIFI
-  observationsFiscales: string  // free text for advisor
+  revenuImposable: number
+  nombrePartsQF: number
+  hasIFI: boolean                      // legacy, conservé pour migration
+  actifImmobilierNetIFI: number        // override manuel si > 0
+  observationsFiscales: string
   strategieSuccession: string
+  heritiers: Heritier[]
 }
 
 // Profil de risque MIF2
@@ -143,6 +197,8 @@ export type HorizonInvestissement = 'moins_1an' | '1_3ans' | '3_5ans' | 'plus_5a
 export type ExperienceInvestissement = 'debutant' | 'intermediaire' | 'experimente' | 'expert'
 export type CapacitePertes = 'zero' | 'dix' | 'vingtcinq' | 'cinquante'
 export type ReactionBaisse = 'vendre_tout' | 'vendre_partie' | 'ne_rien_faire' | 'acheter_plus'
+export type ToleranceIlliquidite = 'moins_10' | '10_30' | '30_60' | 'plus_60'
+export type ClassificationClient = 'non_professionnel' | 'professionnel' | 'contrepartie_eligible'
 export type ProfilRisqueResultat = 'prudent' | 'equilibre' | 'dynamique' | 'offensif'
 
 export interface ProfilRisque {
@@ -151,23 +207,33 @@ export interface ProfilRisque {
   experience: ExperienceInvestissement | ''
   capacitePertes: CapacitePertes | ''
   reactionBaisse: ReactionBaisse | ''
-  resultat: ProfilRisqueResultat | ''  // computed
+  toleranceIlliquidite: ToleranceIlliquidite | ''
+  classificationClient: ClassificationClient | ''
+  justificationClassification: string
+  revenuAnnuelConfirme: number
+  patrimoineFinancierConfirme: number
+  chargesFixesConfirmees: number
+  resultat: ProfilRisqueResultat | ''
 }
 
 // Objectifs patrimoniaux
 export type PrioriteObjectif = 'haute' | 'moyenne' | 'basse'
+export type DelaiCible = 'moins_3ans' | '3_5ans' | '5_10ans' | 'plus_10ans'
 
 export interface ObjectifPatrimonial {
   id: string
   libelle: string
   selected: boolean
   priorite: PrioriteObjectif | ''
+  montantCible: number
+  delaiCible: DelaiCible | ''
 }
 
 export interface ObjectifsSection {
   objectifs: ObjectifPatrimonial[]
+  preferencesESG: boolean
   commentaires: string
-  recommandations: string  // free text for advisor (appears in PDF recommendations page)
+  recommandations: string
 }
 
 // Paramètres Cabinet
@@ -179,7 +245,7 @@ export interface ParametresCabinet {
   adresse: string
   telephone: string
   email: string
-  logo: string  // base64 data URL
+  logo: string
   mentionsLegales: string
 }
 
@@ -210,7 +276,12 @@ export interface BilanCalculations {
   capaciteEpargneMensuelle: number
   revenusMensuelsTotaux: number
   chargesMensuellesTotales: number
-  tmi: number  // percentage e.g. 30
+  tmi: number
   estimationIFI: number
   isAssujettisIFI: boolean
+  plusValueLatenteTotale: number
+  rendementLocatifMoyen: number
+  revenusFoyerAnnuels: number
+  droitsSuccessionEstimes: number
+  actifNetSuccessoral: number
 }
