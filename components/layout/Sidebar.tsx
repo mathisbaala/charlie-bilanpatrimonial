@@ -7,9 +7,10 @@ import type { BilanData } from '@/lib/types'
 import { formatEuros } from '@/lib/calculations'
 import {
   User, Users, Building2, CreditCard, TrendingUp,
-  Calculator, Shield, Target, Settings
+  Calculator, Shield, Target, Settings, Upload
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 
 const PDFButton = dynamic(
   () => import('@/components/pdf/PDFButton').then(m => m.PDFButton),
@@ -55,43 +56,63 @@ function computeSectionCompletude(sectionId: SectionId, bilan: BilanData): numbe
 }
 
 function ringColor(completude: number): string {
-  if (completude === 100) return '#22c55e'
-  if (completude >= 66) return '#A8874A'
-  if (completude >= 33) return '#A8874A'
-  return '#d1c5b0'
+  if (completude === 100) return '#5A9E6F'
+  if (completude >= 50) return '#A8874A'
+  return '#B0A898'
 }
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ReactNode }[] = [
-  { id: 'identite', label: 'Identité', icon: <User size={16} /> },
-  { id: 'familiale', label: 'Situation familiale', icon: <Users size={16} /> },
-  { id: 'actif', label: 'Actif', icon: <Building2 size={16} /> },
-  { id: 'passif', label: 'Passif', icon: <CreditCard size={16} /> },
-  { id: 'revenus', label: 'Revenus & Charges', icon: <TrendingUp size={16} /> },
-  { id: 'fiscalite', label: 'Fiscalité', icon: <Calculator size={16} /> },
-  { id: 'profil_risque', label: 'Profil de risque', icon: <Shield size={16} /> },
-  { id: 'objectifs', label: 'Objectifs', icon: <Target size={16} /> },
+  { id: 'identite',      label: 'Identité',           icon: <User size={15} /> },
+  { id: 'familiale',     label: 'Situation familiale', icon: <Users size={15} /> },
+  { id: 'actif',         label: 'Actif',               icon: <Building2 size={15} /> },
+  { id: 'passif',        label: 'Passif',              icon: <CreditCard size={15} /> },
+  { id: 'revenus',       label: 'Revenus & Charges',   icon: <TrendingUp size={15} /> },
+  { id: 'fiscalite',     label: 'Fiscalité',           icon: <Calculator size={15} /> },
+  { id: 'profil_risque', label: 'Profil de risque',    icon: <Shield size={15} /> },
+  { id: 'objectifs',     label: 'Objectifs',           icon: <Target size={15} /> },
 ]
 
-export function Sidebar({ onOpenCabinet }: { onOpenCabinet: () => void }) {
+export function Sidebar({
+  onOpenCabinet,
+  onOpenImport,
+}: {
+  onOpenCabinet: () => void
+  onOpenImport: () => void
+}) {
   const { bilan, calculations, activeSection, setActiveSection } = useBilan()
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-navy-900 flex flex-col z-40">
+    <aside className="fixed left-0 top-0 h-screen w-64 flex flex-col z-40" style={{
+      backgroundColor: '#1E1C18',
+      borderRight: '1px solid #2E2B25',
+    }}>
+
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-gold-500 flex items-center justify-center">
-            <span className="text-white font-serif text-xs font-bold">C</span>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid #2E2B25' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 flex-shrink-0">
+            <Image
+              src="/charlie-logo.svg"
+              alt="Charlie"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+              style={{ filter: 'invert(1) sepia(1) saturate(0) brightness(2)' }}
+            />
           </div>
           <div>
-            <p className="text-white font-serif text-sm leading-none">Charlie</p>
-            <p className="text-white/40 text-[10px] uppercase tracking-widest mt-0.5">Bilan Patrimonial</p>
+            <p style={{ color: '#EDE9E0', fontFamily: 'Georgia, serif', fontSize: 14, lineHeight: 1, marginBottom: 3 }}>
+              Charlie
+            </p>
+            <p style={{ color: '#6B6660', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              Bilan Patrimonial
+            </p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-3">
+      <nav className="flex-1 overflow-y-auto py-2">
         {SECTIONS.map((section) => {
           const isActive = activeSection === section.id
           const completude = computeSectionCompletude(section.id, bilan)
@@ -100,30 +121,24 @@ export function Sidebar({ onOpenCabinet }: { onOpenCabinet: () => void }) {
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
-              style={{ borderLeftColor: isActive ? '#C09F65' : 'transparent' }}
-              className={`
-                w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-150 border-l-2
-                ${isActive
-                  ? 'bg-white/10 text-white pl-[14px]'
-                  : 'text-white/60 hover:text-white/80 hover:bg-white/5'
-                }
-              `}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-150"
+              style={{
+                borderLeft: `2px solid ${isActive ? '#A8874A' : 'transparent'}`,
+                backgroundColor: isActive ? 'rgba(168,135,74,0.10)' : 'transparent',
+                paddingLeft: isActive ? 14 : 16,
+              }}
+              onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.04)' }}
+              onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
             >
-              <div className={`flex-shrink-0 ${isActive ? 'text-gold-400' : 'text-white/40'}`}>
+              <div style={{ color: isActive ? '#C09F65' : '#5A5650', flexShrink: 0 }}>
                 {section.icon}
               </div>
-              <span className="flex-1 text-sm font-medium truncate">{section.label}</span>
-              <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 32 }}>
-                <ProgressRing
-                  progress={completude}
-                  size={32}
-                  strokeWidth={3}
-                  color={color}
-                />
-                <span
-                  className="absolute text-[8px] font-bold leading-none"
-                  style={{ color }}
-                >
+              <span className="flex-1 text-sm font-medium truncate" style={{ color: isActive ? '#EDE9E0' : '#8A8680' }}>
+                {section.label}
+              </span>
+              <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 30, height: 30 }}>
+                <ProgressRing progress={completude} size={30} strokeWidth={2.5} color={color} />
+                <span className="absolute text-[7.5px] font-bold leading-none" style={{ color }}>
                   {completude}%
                 </span>
               </div>
@@ -133,34 +148,50 @@ export function Sidebar({ onOpenCabinet }: { onOpenCabinet: () => void }) {
       </nav>
 
       {/* Récap patrimonial */}
-      <div className="px-4 py-3 border-t border-white/10 space-y-1.5">
+      <div className="px-4 py-3 space-y-1.5" style={{ borderTop: '1px solid #2E2B25' }}>
         <div className="flex justify-between items-center">
-          <span className="text-white/50 text-xs">Total Actif</span>
-          <span className="text-white/80 text-xs font-medium">{formatEuros(calculations.totalActif)}</span>
+          <span className="text-xs" style={{ color: '#5A5650' }}>Total Actif</span>
+          <span className="text-xs font-medium" style={{ color: '#8A8680' }}>{formatEuros(calculations.totalActif)}</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-white/50 text-xs">Total Passif</span>
-          <span className="text-white/80 text-xs font-medium">{formatEuros(calculations.totalPassif)}</span>
+          <span className="text-xs" style={{ color: '#5A5650' }}>Total Passif</span>
+          <span className="text-xs font-medium" style={{ color: '#8A8680' }}>{formatEuros(calculations.totalPassif)}</span>
         </div>
-        <div className="flex justify-between items-center pt-1 border-t border-white/10">
-          <span className="text-gold-400 text-xs font-medium">Patrimoine Net</span>
-          <span className="text-sm font-semibold">
-            <span style={{ color: calculations.patrimoineNet >= 0 ? '#269163' : '#B52D42' }}>
-              {formatEuros(calculations.patrimoineNet)}
-            </span>
+        <div className="flex justify-between items-center pt-1" style={{ borderTop: '1px solid #2E2B25' }}>
+          <span className="text-xs font-medium" style={{ color: '#C09F65' }}>Patrimoine Net</span>
+          <span className="text-sm font-semibold" style={{
+            color: calculations.patrimoineNet >= 0 ? '#5A9E6F' : '#B52D42'
+          }}>
+            {formatEuros(calculations.patrimoineNet)}
           </span>
         </div>
       </div>
 
-      {/* Settings + PDF buttons */}
-      <div className="px-4 py-3 space-y-2 border-t border-white/10">
+      {/* Actions */}
+      <div className="px-4 py-3 space-y-1.5" style={{ borderTop: '1px solid #2E2B25' }}>
+        {/* Import client */}
+        <button
+          onClick={onOpenImport}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
+          style={{ color: '#C09F65', backgroundColor: 'rgba(168,135,74,0.08)' }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(168,135,74,0.15)')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'rgba(168,135,74,0.08)')}
+        >
+          <Upload size={13} />
+          <span>Importer un client</span>
+        </button>
+
         <button
           onClick={onOpenCabinet}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors text-sm"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
+          style={{ color: '#6B6660' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#8A8680'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.04)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#6B6660'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
         >
-          <Settings size={14} />
+          <Settings size={13} />
           <span>Paramètres cabinet</span>
         </button>
+
         <PDFButton />
       </div>
     </aside>

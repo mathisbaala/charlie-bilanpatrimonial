@@ -13,6 +13,7 @@ import { FiscaliteSection } from '@/components/sections/FiscaliteSection'
 import { ProfilRisqueSection } from '@/components/sections/ProfilRisqueSection'
 import { ObjectifsSection } from '@/components/sections/ObjectifsSection'
 import { CabinetModal } from '@/components/layout/CabinetModal'
+import { ImportModal } from '@/components/layout/ImportModal'
 
 function WelcomeBanner() {
   const { bilan, calculations } = useBilan()
@@ -64,6 +65,7 @@ function WelcomeBanner() {
 export default function HomePage() {
   const { activeSection, resetBilan } = useBilan()
   const [cabinetOpen, setCabinetOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
 
   const sections: Record<string, React.ReactNode> = {
     identite: <IdentiteSection />,
@@ -78,7 +80,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-surface-0">
-      <Sidebar onOpenCabinet={() => setCabinetOpen(true)} />
+      <Sidebar onOpenCabinet={() => setCabinetOpen(true)} onOpenImport={() => setImportOpen(true)} />
       <Header onNewBilan={resetBilan} />
       <main className="ml-64 pt-14 p-8 min-h-screen">
         <div className="max-w-4xl mx-auto">
@@ -89,6 +91,7 @@ export default function HomePage() {
         </div>
       </main>
       <CabinetModal isOpen={cabinetOpen} onClose={() => setCabinetOpen(false)} />
+      <ImportModal isOpen={importOpen} onClose={() => setImportOpen(false)} />
     </div>
   )
 }
