@@ -1,55 +1,57 @@
 import React from 'react'
 import {
-  Document, Page, Text, View, StyleSheet, Font, Image, Svg, Circle, Path, Rect, Line
+  Document, Page, Text, View, StyleSheet, Image, Svg, Circle, Path,
 } from '@react-pdf/renderer'
 import type { BilanData, ParametresCabinet, BilanCalculations } from '@/lib/types'
 
-// ASCII-only number formatting (Helvetica doesn't support U+202F narrow no-break space)
+// ─── Formatage ────────────────────────────────────────────────────────────────
 const fmtEur = (n: number): string => {
   const abs = Math.round(Math.abs(n))
   const s = abs.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
   return (n < 0 ? '-' : '') + s + ' €'
 }
 
-// ─── Color palette (Mérovée style) ──────────────────────────────────────────
+// ─── Palette ──────────────────────────────────────────────────────────────────
 const C = {
-  PARCHMENT:   '#EEECEA',   // page background — warm off-white
-  PANEL:       '#E4E0D8',   // panels, callout backgrounds
-  WHITE:       '#FFFFFF',
-  INK:         '#1C1914',   // near-black body text
-  INK_MED:     '#4E4A44',   // medium text
-  INK_LIGHT:   '#928E88',   // captions, hints
-  GOLD:        '#B59048',   // accent gold
-  GOLD_LIGHT:  '#F0E8D0',   // very light gold tint
-  FOREST:      '#1E3A2F',   // dark green — primary chart color
-  FOREST_MED:  '#3A6B50',   // medium green
-  BORDER:      '#D2CEC6',   // hairline borders
-  BORDER_DARK: '#9A9690',   // thicker rule color
-  POS:         '#1A6040',   // positive green
-  NEG:         '#B02020',   // negative red
+  PARCHMENT:   '#EEECEA',   // fond de page — crème chaud
+  PANEL:       '#E4E0D8',   // cartes KPI, callouts
+  INK:         '#1C1914',   // texte principal
+  INK_MED:     '#4E4A44',   // texte secondaire
+  INK_LIGHT:   '#928E88',   // captions, labels
+  GOLD:        '#B59048',   // accent or
+  FOREST:      '#1E3A2F',   // vert foncé — premier graphique
+  FOREST_2:    '#3A6B50',   // vert moyen
+  SAND:        '#C4B89A',   // sable — troisième catégorie
+  PEBBLE:      '#9A9488',   // galets — quatrième
+  BORDER:      '#D2CEC6',   // séparateurs hairline
+  BORDER_DARK: '#9A9690',   // règle principale
+  POS:         '#1A6040',   // positif
+  NEG:         '#A83030',   // négatif / rouge
 }
 
-// ─── StyleSheet ──────────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
+
+  // Page
   page: {
     backgroundColor: C.PARCHMENT,
-    paddingHorizontal: 44,
-    paddingTop: 32,
-    paddingBottom: 36,
+    paddingHorizontal: 48,
+    paddingTop: 38,
+    paddingBottom: 48,
     fontFamily: 'Helvetica',
+    flexDirection: 'column',
   },
   coverPage: {
     backgroundColor: C.PARCHMENT,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
+    flexDirection: 'column',
   },
 
-  // Inner-page header
+  // ── En-tête interne ─────────────────────────────────────────────────────────
   pageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginBottom: 28,
+    marginBottom: 24,
     paddingBottom: 10,
     borderBottomWidth: 0.5,
     borderBottomColor: C.BORDER_DARK,
@@ -58,108 +60,105 @@ const s = StyleSheet.create({
     fontSize: 8,
     fontFamily: 'Helvetica-Bold',
     color: C.FOREST,
-    letterSpacing: 1.5,
+    letterSpacing: 1.8,
   },
   pageHeaderTitle: {
     fontSize: 7.5,
     fontFamily: 'Helvetica-Bold',
     color: C.INK,
     letterSpacing: 0.8,
+    textAlign: 'right',
   },
   pageHeaderSub: {
     fontSize: 7.5,
-    color: C.INK_MED,
-  },
-  pageNumber: {
-    fontSize: 8,
     color: C.INK_LIGHT,
+    textAlign: 'right',
+    marginTop: 2,
   },
 
-  // Section headers
+  // ── Numéro + titre de section ────────────────────────────────────────────────
   sectionLabel: {
-    fontSize: 8,
-    color: C.INK_MED,
-    letterSpacing: 1.5,
-    marginBottom: 5,
+    fontSize: 7.5,
+    color: C.INK_LIGHT,
+    letterSpacing: 2,
+    marginBottom: 8,
   },
   sectionTitle: {
     fontFamily: 'Times-Roman',
     fontSize: 22,
     color: C.INK,
-    lineHeight: 1.15,
+    lineHeight: 1.2,
     marginBottom: 4,
   },
   sectionSubtitle: {
-    fontSize: 9,
+    fontSize: 8.5,
     color: C.INK_MED,
-    marginBottom: 18,
-    lineHeight: 1.4,
+    marginBottom: 20,
+    lineHeight: 1.5,
   },
 
-  // Subsection label
+  // ── Sous-labels ──────────────────────────────────────────────────────────────
   subLabel: {
-    fontSize: 7.5,
-    fontFamily: 'Helvetica-Bold',
-    color: C.INK_MED,
-    letterSpacing: 1.2,
-    marginBottom: 6,
-  },
-
-  // Table — hairline only, no fills
-  table: { marginBottom: 16 },
-  tableHead: {
-    flexDirection: 'row',
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: C.INK_MED,
-  },
-  tableHeadCell: {
     fontSize: 7,
     fontFamily: 'Helvetica-Bold',
-    color: C.INK_MED,
-    letterSpacing: 0.8,
+    color: C.INK_LIGHT,
+    letterSpacing: 1.5,
+    marginBottom: 8,
+  },
+
+  // ── Cartes KPI (remplissage, pas de bordure) ─────────────────────────────────
+  kpiRow: { flexDirection: 'row', gap: 8, marginBottom: 22 },
+  kpiCard: {
+    flex: 1,
+    padding: 14,
+    backgroundColor: C.PANEL,
+  },
+  kpiLabel: {
+    fontSize: 6.5,
+    color: C.INK_LIGHT,
+    letterSpacing: 1.4,
+    marginBottom: 10,
+    textTransform: 'uppercase',
+  },
+  kpiValue: {
+    fontFamily: 'Times-Roman',
+    fontSize: 22,
+    color: C.INK,
+    lineHeight: 1,
+  },
+  kpiSub: { fontSize: 7.5, color: C.INK_MED, marginTop: 5 },
+
+  // ── Tables (hairlines uniquement) ────────────────────────────────────────────
+  table: { marginBottom: 18 },
+  tableHead: {
+    flexDirection: 'row',
+    paddingBottom: 5,
+    borderBottomWidth: 0.5,
+    borderBottomColor: C.BORDER,
+    marginBottom: 2,
+  },
+  tableHeadCell: {
+    fontSize: 6.5,
+    color: C.INK_LIGHT,
+    letterSpacing: 1.2,
   },
   tableRow: {
     flexDirection: 'row',
-    paddingVertical: 5,
+    paddingVertical: 8,
     borderBottomWidth: 0.5,
     borderBottomColor: C.BORDER,
   },
-  tableRowAlt: {},  // no alternating background
   tableLabel: { flex: 2, fontSize: 9.5, color: C.INK },
   tableValue: { flex: 1, fontSize: 9.5, color: C.INK, textAlign: 'right' },
   tableTotal: {
     flexDirection: 'row',
-    paddingVertical: 6,
-    borderTopWidth: 1,
-    borderTopColor: C.INK_MED,
-    marginTop: 2,
+    paddingVertical: 8,
+    marginTop: 4,
+    borderTopWidth: 0.5,
+    borderTopColor: C.BORDER_DARK,
   },
 
-  // KPI cards — thin border, no fill
-  kpiRow: { flexDirection: 'row', gap: 10, marginBottom: 22 },
-  kpiCard: {
-    flex: 1,
-    padding: 14,
-    borderWidth: 0.5,
-    borderColor: C.BORDER_DARK,
-  },
-  kpiLabel: {
-    fontSize: 7,
-    fontFamily: 'Helvetica-Bold',
-    color: C.INK_MED,
-    letterSpacing: 0.8,
-    marginBottom: 10,
-  },
-  kpiValue: {
-    fontFamily: 'Times-Roman',
-    fontSize: 19,
-    color: C.INK,
-    lineHeight: 1,
-  },
-  kpiSub: { fontSize: 8, color: C.INK_MED, marginTop: 5 },
-
-  // Editorial callout (left gold border)
+  // ── Encadré éditorial (bordure gauche or) ────────────────────────────────────
   callout: {
     borderLeftWidth: 3,
     borderLeftColor: C.GOLD,
@@ -169,44 +168,92 @@ const s = StyleSheet.create({
     marginBottom: 20,
   },
   calloutLabel: {
-    fontSize: 7,
+    fontSize: 6.5,
     fontFamily: 'Helvetica-Bold',
     color: C.GOLD,
-    letterSpacing: 1.5,
+    letterSpacing: 1.8,
     marginBottom: 8,
   },
   calloutText: {
     fontSize: 9.5,
     color: C.INK,
-    lineHeight: 1.6,
+    lineHeight: 1.7,
   },
 })
 
-// ─── Inner-page header ────────────────────────────────────────────────────────
-function PageHeader({ cabinet, clientName, section, pageNum, totalPages }:
-  { cabinet: ParametresCabinet; clientName: string; section?: string; pageNum?: string; totalPages?: string }) {
+// ─── Helpers SVG donut ────────────────────────────────────────────────────────
+function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
+  const rad = ((deg - 90) * Math.PI) / 180
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
+}
+
+function arcPath(cx: number, cy: number, r: number, start: number, end: number): string {
+  if (end - start >= 360) end = 359.99
+  const s = polarToCartesian(cx, cy, r, start)
+  const e = polarToCartesian(cx, cy, r, end)
+  const large = end - start > 180 ? 1 : 0
+  return `M ${cx} ${cy} L ${s.x} ${s.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y} Z`
+}
+
+// ─── En-tête de page interne ─────────────────────────────────────────────────
+function PageHeader({ cabinet, clientName, docTitle }: {
+  cabinet: ParametresCabinet
+  clientName: string
+  docTitle: string
+}) {
+  const nomCabinet = (cabinet.nomCabinet || 'Charlie').toUpperCase()
+  const ref = `${nomCabinet.slice(0, 3)}-${(clientName.split(' ').pop() || 'XX').slice(0, 2).toUpperCase()}-BIL-${new Date().getFullYear()}`
   return (
     <View style={s.pageHeader}>
-      <View style={{ gap: 3 }}>
-        <Text style={s.pageHeaderCabinet}>{(cabinet.nomCabinet || 'Charlie').toUpperCase()}</Text>
+      <View>
         {cabinet.logo ? (
-          <Image src={cabinet.logo} style={{ height: 14, maxWidth: 60, objectFit: 'contain' }} />
-        ) : null}
+          <Image src={cabinet.logo} style={{ height: 16, maxWidth: 70, objectFit: 'contain' }} />
+        ) : (
+          <>
+            <Text style={s.pageHeaderCabinet}>{nomCabinet}</Text>
+            {/* Filet or sous le nom */}
+            <View style={{ width: 28, height: 1.5, backgroundColor: C.GOLD, marginTop: 3 }} />
+          </>
+        )}
       </View>
-      <View style={{ alignItems: 'flex-end', gap: 2 }}>
-        <Text style={s.pageHeaderTitle}>BILAN PATRIMONIAL{section ? ` — ${section}` : ''}</Text>
-        <Text style={s.pageHeaderSub}>{clientName}{pageNum ? ` · p. ${pageNum}` : ''}</Text>
+      <View>
+        <Text style={s.pageHeaderTitle}>{docTitle.toUpperCase()}</Text>
+        <Text style={s.pageHeaderSub}>{clientName} · Réf. {ref}</Text>
       </View>
     </View>
   )
 }
 
-// ─── Section heading component ───────────────────────────────────────────────
+// ─── Pied de page (chaque page) ──────────────────────────────────────────────
+function PageFooter({ cabinet }: { cabinet: ParametresCabinet }) {
+  const nomCabinet = (cabinet.nomCabinet || 'Charlie').toUpperCase()
+  return (
+    <View style={{
+      marginTop: 'auto',
+      paddingTop: 8,
+      borderTopWidth: 0.5,
+      borderTopColor: C.BORDER,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    }}>
+      <Text style={{ fontSize: 6.5, color: C.INK_LIGHT, letterSpacing: 0.5 }}>
+        {nomCabinet} · STRICTEMENT CONFIDENTIEL
+      </Text>
+      <Text
+        style={{ fontSize: 6.5, color: C.INK_LIGHT }}
+        render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
+      />
+    </View>
+  )
+}
+
+// ─── En-tête de section ────────────────────────────────────────────────────────
 function SectionHeading({ num, slug, title, subtitle }: {
   num: string; slug: string; title: string; subtitle?: string
 }) {
   return (
-    <View style={{ marginBottom: 14 }}>
+    <View style={{ marginBottom: 16 }}>
       <Text style={s.sectionLabel}>
         <Text style={{ color: C.GOLD }}>{num}</Text>{' · '}{slug.toUpperCase()}
       </Text>
@@ -216,91 +263,98 @@ function SectionHeading({ num, slug, title, subtitle }: {
   )
 }
 
-// ─── Cover page ──────────────────────────────────────────────────────────────
+// ─── Page de garde ────────────────────────────────────────────────────────────
 function CoverPage({ bilan, cabinet }: { bilan: BilanData; cabinet: ParametresCabinet }) {
   const clientName = [bilan.identite.civilite, bilan.identite.prenom, bilan.identite.nom]
     .filter(Boolean).join(' ') || 'Client'
   const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
   const conseiller = [cabinet.prenomConseiller, cabinet.nomConseiller].filter(Boolean).join(' ')
-  const ref = `${(cabinet.nomCabinet || 'CBP').slice(0, 3).toUpperCase()}-${(bilan.identite.nom || 'XX').slice(0, 2).toUpperCase()}-BIL-${new Date().getFullYear()}`
+  const nomCabinet = (cabinet.nomCabinet || 'Charlie').toUpperCase()
+  const ref = `${nomCabinet.slice(0, 3)}-${(bilan.identite.nom || 'XX').slice(0, 2).toUpperCase()}-BIL-${new Date().getFullYear()}`
 
   return (
     <Page size="A4" style={s.coverPage}>
-      {/* ── Body ─────────────────────────────────────────── */}
-      <View style={{ flex: 1, paddingHorizontal: 56, paddingTop: 52, paddingBottom: 48, justifyContent: 'space-between' }}>
+      <View style={{ flex: 1, paddingHorizontal: 56, paddingTop: 52, paddingBottom: 44, flexDirection: 'column' }}>
 
-        {/* Cabinet header */}
+        {/* Cabinet */}
         <View>
           {cabinet.logo ? (
             <Image src={cabinet.logo} style={{ height: 28, maxWidth: 120, objectFit: 'contain', marginBottom: 6 }} />
           ) : (
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 11, color: C.FOREST, letterSpacing: 2, marginBottom: 4 }}>
-              {(cabinet.nomCabinet || 'Charlie').toUpperCase()}
-            </Text>
+            <>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 10, color: C.FOREST, letterSpacing: 2.2 }}>
+                {nomCabinet}
+              </Text>
+              <View style={{ width: 28, height: 1.5, backgroundColor: C.GOLD, marginTop: 4 }} />
+            </>
           )}
           {cabinet.adresse ? (
-            <Text style={{ fontSize: 8, color: C.INK_MED, letterSpacing: 0.5 }}>
+            <Text style={{ fontSize: 7.5, color: C.INK_LIGHT, letterSpacing: 0.5, marginTop: 6 }}>
               {cabinet.adresse.toUpperCase()}
             </Text>
           ) : null}
         </View>
 
-        {/* Title block */}
-        <View style={{ marginTop: 60 }}>
-          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 2, marginBottom: 28 }}>
+        {/* Bloc titre */}
+        <View style={{ marginTop: 80 }}>
+          <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_LIGHT, letterSpacing: 2.5, marginBottom: 30 }}>
             RAPPORT CLIENT
           </Text>
-          <Text style={{ fontFamily: 'Times-Roman', fontSize: 48, color: C.INK, lineHeight: 1.05, marginBottom: 0 }}>
+          <Text style={{ fontFamily: 'Times-Roman', fontSize: 52, color: C.INK, lineHeight: 1.0 }}>
             Bilan
           </Text>
-          <Text style={{ fontFamily: 'Times-Roman', fontSize: 48, color: C.INK, lineHeight: 1.05 }}>
+          <Text style={{ fontFamily: 'Times-Roman', fontSize: 52, color: C.INK, lineHeight: 1.0 }}>
             patrimonial
           </Text>
-          {/* Gold underline */}
-          <Svg width={180} height={3} style={{ marginTop: 4, marginBottom: 20 }}>
-            <Rect x={0} y={0} width={140} height={1.5} fill={C.GOLD} />
-          </Svg>
+          {/* Filet or sous "patrimonial" */}
+          <View style={{ width: 148, height: 1.5, backgroundColor: C.GOLD, marginTop: 6, marginBottom: 22 }} />
           <Text style={{ fontFamily: 'Times-Roman', fontSize: 13, color: C.INK_MED }}>
             {'É'}tat au {dateStr}
           </Text>
         </View>
 
-        {/* Prepared for */}
-        <View style={{ marginTop: 52 }}>
-          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 2, marginBottom: 12 }}>
+        {/* Destinataire */}
+        <View style={{ marginTop: 56 }}>
+          <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_LIGHT, letterSpacing: 2.5, marginBottom: 14 }}>
             PR{'É'}PAR{'É'} POUR
           </Text>
-          <Text style={{ fontFamily: 'Times-Roman', fontSize: 22, color: C.INK, marginBottom: 4 }}>
+          <Text style={{ fontFamily: 'Times-Roman', fontSize: 24, color: C.INK, marginBottom: 5 }}>
             {clientName}
           </Text>
           {conseiller ? (
             <Text style={{ fontSize: 9, color: C.INK_MED }}>
-              Conseiller : {conseiller}
+              Conseiller : {conseiller}
             </Text>
           ) : null}
         </View>
-      </View>
 
-      {/* ── Footer ───────────────────────────────────────── */}
-      <View style={{
-        borderTopWidth: 0.5, borderTopColor: C.BORDER_DARK,
-        paddingHorizontal: 56, paddingVertical: 16,
-        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
-      }}>
-        <View style={{ gap: 3 }}>
-          <Text style={{ fontSize: 7.5, color: C.INK_MED }}>R{'é'}f{'é'}rence : {ref}</Text>
-          <Text style={{ fontSize: 7.5, color: C.INK_MED }}>Date d{'’'}estimation : {dateStr}</Text>
-          {cabinet.numeroOrias ? (
-            <Text style={{ fontSize: 7.5, color: C.INK_MED }}>
-              Immatricul{'é'} ORIAS n{'°'} {cabinet.numeroOrias}
+        {/* Espace flexible */}
+        <View style={{ flex: 1 }} />
+
+        {/* Pied de couverture */}
+        <View style={{
+          borderTopWidth: 0.5,
+          borderTopColor: C.BORDER_DARK,
+          paddingTop: 14,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+        }}>
+          <View style={{ gap: 3 }}>
+            <Text style={{ fontSize: 7.5, color: C.INK_LIGHT }}>Référence : {ref}</Text>
+            <Text style={{ fontSize: 7.5, color: C.INK_LIGHT }}>Date d’estimation : {dateStr}</Text>
+            {cabinet.numeroOrias ? (
+              <Text style={{ fontSize: 7.5, color: C.INK_LIGHT }}>
+                Immatriculé ORIAS n° {cabinet.numeroOrias}
+              </Text>
+            ) : null}
+          </View>
+          <View style={{ alignItems: 'flex-end', gap: 3 }}>
+            <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.GOLD, letterSpacing: 1.5 }}>
+              STRICTEMENT CONFIDENTIEL
             </Text>
-          ) : null}
-        </View>
-        <View style={{ alignItems: 'flex-end', gap: 3 }}>
-          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.GOLD, letterSpacing: 1.5 }}>
-            STRICTEMENT CONFIDENTIEL
-          </Text>
-          <Text style={{ fontSize: 7.5, color: C.INK_MED }}>Document personnel · Ne pas diffuser</Text>
+            <Text style={{ fontSize: 7, color: C.INK_LIGHT }}>Document personnel · Ne pas diffuser</Text>
+          </View>
         </View>
       </View>
     </Page>
@@ -313,17 +367,17 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
   const ident = bilan.identite
   const fam = bilan.situationFamiliale
 
-  const STATUT_LABELS: Record<string, string> = {
+  const STATUT: Record<string, string> = {
     celibataire: 'Célibataire', marie: 'Marié(e)', pacse: 'Pacsé(e)',
-    concubinage: 'Concubinage', divorce: 'Divorçé(e)', veuf: 'Veuf / Veuve',
+    concubinage: 'Concubinage', divorce: 'Divorcé(e)', veuf: 'Veuf / Veuve',
   }
-  const REGIME_LABELS: Record<string, string> = {
+  const REGIME: Record<string, string> = {
     communaute_legale: 'Communauté légale',
     separation_biens: 'Séparation de biens',
     communaute_universelle: 'Communauté universelle',
     participation_acquets: 'Participation aux acquêts',
   }
-  const SITPRO_LABELS: Record<string, string> = {
+  const SITPRO: Record<string, string> = {
     salarie: 'Salarié', tns: 'TNS', dirigeant: 'Dirigeant',
     retraite: 'Retraité', sans_emploi: 'Sans emploi', autre: 'Autre',
   }
@@ -336,7 +390,7 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
     ['Lieu de naissance', ident.lieuNaissance],
     ['Nationalité', ident.nationalite],
     ['Résidence fiscale', ident.paysResidenceFiscale || 'France'],
-    ['Situation professionnelle', ident.situationProfessionnelle ? (SITPRO_LABELS[ident.situationProfessionnelle] || ident.situationProfessionnelle) : ''],
+    ['Situation professionnelle', ident.situationProfessionnelle ? (SITPRO[ident.situationProfessionnelle] || ident.situationProfessionnelle) : ''],
     ['Profession', ident.professionDetaille],
     ['Email', ident.email],
     ['Téléphone', ident.telephone],
@@ -346,18 +400,19 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
   const conjointRows: [string, string][] = conjoint ? ([
     ['Prénom / Nom', `${conjoint.prenom} ${conjoint.nom}`.trim()],
     ['Date de naissance', conjoint.dateNaissance ? new Date(conjoint.dateNaissance).toLocaleDateString('fr-FR') : ''],
-    ['Situation pro', conjoint.situationProfessionnelle ? (SITPRO_LABELS[conjoint.situationProfessionnelle] || conjoint.situationProfessionnelle) : ''],
-    ['Statut marital', fam.statutMarital ? (STATUT_LABELS[fam.statutMarital] || fam.statutMarital) : ''],
-    ['Régime matrimonial', fam.regimeMatrimonial ? (REGIME_LABELS[fam.regimeMatrimonial] || fam.regimeMatrimonial) : ''],
+    ['Situation professionnelle', conjoint.situationProfessionnelle ? (SITPRO[conjoint.situationProfessionnelle] || conjoint.situationProfessionnelle) : ''],
+    ['Statut marital', fam.statutMarital ? (STATUT[fam.statutMarital] || fam.statutMarital) : ''],
+    ['Régime matrimonial', fam.regimeMatrimonial ? (REGIME[fam.regimeMatrimonial] || fam.regimeMatrimonial) : ''],
   ] as [string, string][]).filter(([, v]) => v && v.length > 0) : []
 
   return (
     <Page size="A4" style={s.page}>
-      <PageHeader cabinet={cabinet} clientName={clientName} />
-      <SectionHeading num="01" slug="Identité &amp; Situation" title="Identité &amp; Situation personnelle" />
+      <PageHeader cabinet={cabinet} clientName={clientName} docTitle="Bilan patrimonial" />
+      <SectionHeading num="01" slug="Identité &amp; Situation" title="Identité &amp; situation personnelle"
+        subtitle="Informations civiles, professionnelles et patrimoniales." />
 
       {/* Informations personnelles */}
-      <View style={{ marginBottom: 14 }}>
+      <View style={{ marginBottom: 20 }}>
         <Text style={s.subLabel}>INFORMATIONS PERSONNELLES</Text>
         <View style={s.table}>
           <View style={s.tableHead}>
@@ -381,7 +436,7 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
 
       {/* Conjoint */}
       {conjoint && conjointRows.length > 0 && (
-        <View style={{ marginBottom: 14 }}>
+        <View style={{ marginBottom: 20 }}>
           <Text style={s.subLabel}>CONJOINT / PARTENAIRE</Text>
           <View style={s.table}>
             {conjointRows.map(([label, value], i) => (
@@ -396,7 +451,7 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
 
       {/* Enfants */}
       {fam.enfants.length > 0 && (
-        <View style={{ marginBottom: 14 }}>
+        <View style={{ marginBottom: 20 }}>
           <Text style={s.subLabel}>COMPOSITION DU FOYER</Text>
           <View style={s.table}>
             {fam.enfants.map((e, i) => (
@@ -409,28 +464,9 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
         </View>
       )}
 
-      {/* Donations */}
-      {fam.donations.length > 0 && (
-        <View style={{ marginBottom: 14 }}>
-          <Text style={s.subLabel}>DONATIONS ANTÉRIEURES</Text>
-          {fam.donations.map((don, i) => {
-            const donTypeLabel: Record<string, string> = {
-              manuel: 'Donation manuelle', assurance_vie: 'Via assurance-vie',
-              demembrement: 'Démembrement', autre: 'Autre',
-            }
-            return (
-              <Text key={i} style={{ fontSize: 9.5, color: C.INK, marginBottom: 4, lineHeight: 1.4 }}>
-                {donTypeLabel[don.type] || don.type} — {fmtEur(don.montant)} à {don.beneficiaire}
-                {don.date ? ` (${new Date(don.date).toLocaleDateString('fr-FR')})` : ''}
-              </Text>
-            )
-          })}
-        </View>
-      )}
-
-      {/* Testament */}
+      {/* Testament & donations */}
       {fam.hasTestament && (
-        <View style={{ marginBottom: 8 }}>
+        <View style={{ marginBottom: 12 }}>
           <Text style={s.subLabel}>TESTAMENT</Text>
           <Text style={{ fontSize: 9.5, color: C.INK }}>
             {fam.typeTestament === 'authentique' ? 'Authentique (notarié)' : 'Olographe (manuscrit)'}
@@ -440,67 +476,53 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
       )}
 
       {fam.commentairesFamiliaux ? (
-        <View style={{ marginBottom: 0 }}>
-          <Text style={{ ...s.subLabel, marginBottom: 4 }}>COMMENTAIRES</Text>
-          <Text style={{ fontSize: 9.5, color: C.INK, lineHeight: 1.5 }}>{fam.commentairesFamiliaux}</Text>
+        <View style={s.callout}>
+          <Text style={s.calloutLabel}>OBSERVATIONS</Text>
+          <Text style={s.calloutText}>{fam.commentairesFamiliaux}</Text>
         </View>
       ) : null}
+
+      <PageFooter cabinet={cabinet} />
     </Page>
   )
 }
 
-
-// ─── Bilan Actif + Passif + Répartition ──────────────────────────────────────
-function BilanActifPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
+// ─── Synthèse patrimoniale ────────────────────────────────────────────────────
+function SynthesePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
 
-  // Pie chart helpers
-  const totalActif = calc.totalActif
-  const immoRatio = totalActif > 0 ? calc.totalActifImmobilier / totalActif : 0
-  const finRatio  = totalActif > 0 ? calc.totalActifFinancier  / totalActif : 0
-  const proRatio  = totalActif > 0 ? calc.totalActifProfessionnel / totalActif : 0
-
-  function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
-    const rad = ((deg - 90) * Math.PI) / 180
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
-  }
-  function arc(cx: number, cy: number, r: number, start: number, end: number) {
-    if (end - start >= 360) end = 359.99
-    const s2 = polarToCartesian(cx, cy, r, start)
-    const e  = polarToCartesian(cx, cy, r, end)
-    const large = end - start > 180 ? 1 : 0
-    return `M ${cx} ${cy} L ${s2.x} ${s2.y} A ${r} ${r} 0 ${large} 1 ${e.x} ${e.y} Z`
-  }
-
+  // Donut chart
+  const total = calc.totalActif
   const segments = [
-    { ratio: immoRatio, color: C.FOREST,    label: 'Immobilier',    amount: calc.totalActifImmobilier },
-    { ratio: finRatio,  color: C.GOLD,      label: 'Financier',     amount: calc.totalActifFinancier },
-    { ratio: proRatio,  color: C.INK_LIGHT, label: 'Professionnel', amount: calc.totalActifProfessionnel },
-  ].filter(seg => seg.ratio > 0)
+    { ratio: total > 0 ? calc.totalActifImmobilier / total : 0,    color: C.FOREST,   label: 'Immobilier',    amount: calc.totalActifImmobilier },
+    { ratio: total > 0 ? calc.totalActifFinancier / total : 0,     color: C.GOLD,     label: 'Financier',     amount: calc.totalActifFinancier },
+    { ratio: total > 0 ? calc.totalActifProfessionnel / total : 0, color: C.SAND,     label: 'Professionnel', amount: calc.totalActifProfessionnel },
+  ].filter(seg => seg.ratio > 0.001)
 
   let deg = 0
   const pieSegments = segments.map(seg => {
     const start = deg
     const end = deg + seg.ratio * 360
     deg = end
-    return { ...seg, path: arc(50, 50, 40, start, end) }
+    return { ...seg, path: arcPath(50, 50, 48, start, end) }
   })
+
+  // Total patrimoine brut formaté court (ex: "1.71 M€")
+  const patrimoineShort = total >= 1_000_000
+    ? `${(total / 1_000_000).toFixed(2)} M€`
+    : `${Math.round(total / 1000)} k€`
 
   return (
     <Page size="A4" style={s.page}>
-      <PageHeader cabinet={cabinet} clientName={clientName} />
-      <SectionHeading
-        num="02"
-        slug="Bilan"
-        title="Bilan Actif / Passif"
-        subtitle={`Patrimoine consolidé au ${new Date().toLocaleDateString('fr-FR')}`}
-      />
+      <PageHeader cabinet={cabinet} clientName={clientName} docTitle="Bilan patrimonial" />
+      <SectionHeading num="02" slug="Synthèse patrimoniale" title="Vue d’ensemble"
+        subtitle={`Patrimoine consolidé au ${new Date().toLocaleDateString('fr-FR')}.`} />
 
-      {/* KPI row */}
+      {/* Cartes KPI */}
       <View style={s.kpiRow}>
         <View style={s.kpiCard}>
-          <Text style={s.kpiLabel}>TOTAL ACTIF</Text>
-          <Text style={{ ...s.kpiValue, color: C.FOREST }}>{fmtEur(calc.totalActif)}</Text>
+          <Text style={s.kpiLabel}>PATRIMOINE BRUT</Text>
+          <Text style={{ ...s.kpiValue, color: C.INK }}>{fmtEur(calc.totalActif)}</Text>
           <Text style={s.kpiSub}>Avant déduction passif</Text>
         </View>
         <View style={s.kpiCard}>
@@ -510,170 +532,290 @@ function BilanActifPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: Bila
         </View>
         <View style={s.kpiCard}>
           <Text style={s.kpiLabel}>PATRIMOINE NET</Text>
-          <Text style={{ ...s.kpiValue, color: C.GOLD }}>{fmtEur(calc.patrimoineNet)}</Text>
+          <Text style={{ ...s.kpiValue, color: C.FOREST }}>{fmtEur(calc.patrimoineNet)}</Text>
           <Text style={s.kpiSub}>Au {new Date().toLocaleDateString('fr-FR')}</Text>
         </View>
+        {calc.tauxEndettement > 0 && (
+          <View style={s.kpiCard}>
+            <Text style={s.kpiLabel}>ENDETTEMENT</Text>
+            <Text style={{ ...s.kpiValue, color: calc.tauxEndettement > 35 ? C.NEG : C.INK }}>
+              {calc.tauxEndettement.toFixed(1)} %
+            </Text>
+            <Text style={s.kpiSub}>Des revenus nets</Text>
+          </View>
+        )}
       </View>
 
-      {/* Plus-value latente */}
-      {calc.plusValueLatenteTotale !== 0 && (
-        <View style={{ marginBottom: 14, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: calc.plusValueLatenteTotale >= 0 ? C.FOREST : C.NEG, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={{ fontSize: 8, color: C.INK_MED, letterSpacing: 0.8 }}>PLUS-VALUE LATENTE IMMOBILIÈRE</Text>
-          <Text style={{ fontFamily: 'Times-Roman', fontSize: 16, color: calc.plusValueLatenteTotale >= 0 ? C.POS : C.NEG }}>{fmtEur(calc.plusValueLatenteTotale)}</Text>
+      {/* Callout lecture */}
+      <View style={s.callout}>
+        <Text style={s.calloutLabel}>LECTURE DU CONSEILLER</Text>
+        <Text style={s.calloutText}>
+          {`Votre patrimoine net s’établit à `}
+          <Text style={{ fontFamily: 'Helvetica-Bold' }}>{fmtEur(calc.patrimoineNet)}</Text>
+          {`, structuré autour de `}
+          {segments.map((seg, i) => (
+            <Text key={i}>
+              {i > 0 ? (i === segments.length - 1 ? ' et d’un ' : ', d’un ') : 'un '}
+              {seg.label.toLowerCase()}
+              {` (à hauteur de ${Math.round(seg.ratio * 100)} %)`}
+            </Text>
+          ))}
+          {`. Le passif s’élève à `}
+          <Text style={{ fontFamily: 'Helvetica-Bold' }}>{fmtEur(calc.totalPassif)}</Text>
+          {`, soit un taux d’endettement de ${calc.tauxEndettement.toFixed(1)} %.`}
+        </Text>
+      </View>
+
+      {/* Répartition donut + légende */}
+      {pieSegments.length > 0 && (
+        <View style={{ backgroundColor: C.PANEL, padding: 20, marginBottom: 0 }}>
+          <Text style={{ ...s.subLabel, marginBottom: 14 }}>RÉPARTITION PAR CATÉGORIE</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 28 }}>
+            {/* Donut SVG + valeur centrale superposée */}
+            <View style={{ width: 120, height: 120, position: 'relative' }}>
+              <Svg width={120} height={120} viewBox="0 0 100 100">
+                {pieSegments.map((p, i) => <Path key={i} d={p.path} fill={p.color} />)}
+                {/* Trou central */}
+                <Circle cx={50} cy={50} r={30} fill={C.PANEL} />
+              </Svg>
+              {/* Valeur centrale en overlay */}
+              <View style={{
+                position: 'absolute',
+                top: 0, left: 0, right: 0, bottom: 0,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+                <Text style={{ fontFamily: 'Times-Roman', fontSize: 9.5, color: C.INK, textAlign: 'center' }}>
+                  {patrimoineShort}
+                </Text>
+                <Text style={{ fontSize: 5.5, color: C.INK_LIGHT, letterSpacing: 0.6, textAlign: 'center', marginTop: 2 }}>
+                  PATRIMOINE
+                </Text>
+              </View>
+            </View>
+
+            {/* Légende */}
+            <View style={{ flex: 1, gap: 10 }}>
+              {segments.map((seg, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={{ width: 9, height: 9, backgroundColor: seg.color }} />
+                    <Text style={{ fontSize: 9, color: C.INK }}>{seg.label}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 24 }}>
+                    <Text style={{ fontSize: 9, color: C.INK_MED }}>{fmtEur(seg.amount)}</Text>
+                    <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.INK, width: 36, textAlign: 'right' }}>
+                      {Math.round(seg.ratio * 100)} %
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
         </View>
       )}
 
-      {/* Actif + Passif side by side */}
-      <View style={{ flexDirection: 'row', gap: 20, marginBottom: 16 }}>
-
-        {/* Actif table */}
-        <View style={{ flex: 3 }}>
-          <Text style={s.subLabel}>ACTIF</Text>
-          <View style={s.table}>
-            <View style={s.tableHead}>
-              <Text style={{ ...s.tableHeadCell, flex: 2 }}>POSTE</Text>
-              <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>VALEUR</Text>
-            </View>
-
-            {bilan.actif.immobilier.length > 0 && (
-              <>
-                <View style={{ ...s.tableRow, borderBottomWidth: 0 }}>
-                  <Text style={{ flex: 2, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 0.8, paddingTop: 6 }}>IMMOBILIER</Text>
-                  <Text style={{ flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, textAlign: 'right', paddingTop: 6 }}>{fmtEur(calc.totalActifImmobilier)}</Text>
-                </View>
-                {bilan.actif.immobilier.map((bien) => {
-                  const pv = bien.prixAcquisition > 0 ? bien.valeurEstimee - bien.prixAcquisition : null
-                  const isLocatif = ['locatif_nu', 'locatif_meuble', 'lmnp'].includes(bien.type)
-                  const rendement = isLocatif && bien.loyerMensuel > 0 && bien.valeurEstimee > 0
-                    ? ((bien.loyerMensuel * 12 / bien.valeurEstimee) * 100).toFixed(1) + ' %'
-                    : null
-                  const meta: string[] = []
-                  if (pv !== null) meta.push(`PV : ${fmtEur(pv)}`)
-                  if (rendement) meta.push(`Rend. : ${rendement}`)
-                  return (
-                    <View key={bien.id} style={s.tableRow}>
-                      <View style={{ flex: 2 }}>
-                        <Text style={s.tableLabel}>{bien.libelle || bien.type}</Text>
-                        {meta.length > 0 && (
-                          <Text style={{ fontSize: 7.5, color: C.INK_LIGHT, marginTop: 2 }}>{meta.join('  ·  ')}</Text>
-                        )}
-                      </View>
-                      <Text style={s.tableValue}>{fmtEur(bien.valeurEstimee)}</Text>
-                    </View>
-                  )
-                })}
-              </>
-            )}
-
-            {bilan.actif.financier.length > 0 && (
-              <>
-                <View style={{ ...s.tableRow, borderBottomWidth: 0 }}>
-                  <Text style={{ flex: 2, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 0.8, paddingTop: 6 }}>FINANCIER</Text>
-                  <Text style={{ flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, textAlign: 'right', paddingTop: 6 }}>{fmtEur(calc.totalActifFinancier)}</Text>
-                </View>
-                {bilan.actif.financier.map((fin) => (
-                  <View key={fin.id} style={s.tableRow}>
-                    <Text style={s.tableLabel}>{fin.libelle || fin.type}{fin.etablissement ? ` — ${fin.etablissement}` : ''}</Text>
-                    <Text style={s.tableValue}>{fmtEur(fin.valeur)}</Text>
-                  </View>
-                ))}
-              </>
-            )}
-
-            {bilan.actif.professionnel.length > 0 && (
-              <>
-                <View style={{ ...s.tableRow, borderBottomWidth: 0 }}>
-                  <Text style={{ flex: 2, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, letterSpacing: 0.8, paddingTop: 6 }}>PROFESSIONNEL</Text>
-                  <Text style={{ flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.INK_MED, textAlign: 'right', paddingTop: 6 }}>{fmtEur(calc.totalActifProfessionnel)}</Text>
-                </View>
-                {bilan.actif.professionnel.map((pro) => (
-                  <View key={pro.id} style={s.tableRow}>
-                    <Text style={s.tableLabel}>{pro.libelle}{pro.pourcentageDetention ? ` (${pro.pourcentageDetention} %)` : ''}</Text>
-                    <Text style={s.tableValue}>{fmtEur(pro.valeurEstimee)}</Text>
-                  </View>
-                ))}
-              </>
-            )}
-
-            <View style={s.tableTotal}>
-              <Text style={{ flex: 2, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.INK }}>Total Actif</Text>
-              <Text style={{ flex: 1, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.INK, textAlign: 'right' }}>{fmtEur(calc.totalActif)}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Passif table + pie chart */}
-        <View style={{ flex: 2 }}>
-          <Text style={s.subLabel}>PASSIF</Text>
-          <View style={{ ...s.table, marginBottom: 20 }}>
-            <View style={s.tableHead}>
-              <Text style={{ ...s.tableHeadCell, flex: 2 }}>ENGAGEMENT</Text>
-              <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>MONTANT</Text>
-            </View>
-            {bilan.passif.credits.map((credit) => (
-              <View key={credit.id} style={s.tableRow}>
-                <Text style={s.tableLabel}>{credit.libelle || credit.type}{credit.etablissement ? ` — ${credit.etablissement}` : ''}</Text>
-                <Text style={{ ...s.tableValue, color: C.NEG }}>{fmtEur(credit.capitalRestantDu)}</Text>
-              </View>
-            ))}
-            {bilan.passif.autresDettes > 0 && (
-              <View style={s.tableRow}>
-                <Text style={s.tableLabel}>Autres dettes</Text>
-                <Text style={{ ...s.tableValue, color: C.NEG }}>{fmtEur(bilan.passif.autresDettes)}</Text>
-              </View>
-            )}
-            <View style={s.tableTotal}>
-              <Text style={{ flex: 2, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.NEG }}>Total Passif</Text>
-              <Text style={{ flex: 1, fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.NEG, textAlign: 'right' }}>{fmtEur(calc.totalPassif)}</Text>
-            </View>
-          </View>
-
-          {/* Répartition du patrimoine */}
-          {pieSegments.length > 0 && (
-            <View style={{ padding: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
-              <Text style={{ ...s.subLabel, marginBottom: 8 }}>RÉPARTITION</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <Svg width={80} height={80} viewBox="0 0 100 100">
-                  {pieSegments.map((p, i) => <Path key={i} d={p.path} fill={p.color} />)}
-                  <Circle cx={50} cy={50} r={26} fill={C.PARCHMENT} />
-                </Svg>
-                <View style={{ gap: 7, flex: 1 }}>
-                  {segments.map((seg, i) => (
-                    <View key={i} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                        <View style={{ width: 7, height: 7, backgroundColor: seg.color }} />
-                        <Text style={{ fontSize: 8, color: C.INK }}>{seg.label}</Text>
-                      </View>
-                      <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.INK }}>
-                        {Math.round(seg.ratio * 100)} %
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            </View>
-          )}
-        </View>
-      </View>
-
+      <PageFooter cabinet={cabinet} />
     </Page>
   )
 }
 
-// ─── Revenus & Charges ──────────────────────────────────────────
+// ─── Inventaire détaillé des actifs ──────────────────────────────────────────
+function InventairePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
+  const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
+
+  return (
+    <Page size="A4" style={s.page}>
+      <PageHeader cabinet={cabinet} clientName={clientName} docTitle="Bilan patrimonial" />
+      <SectionHeading num="03" slug="Détail des actifs" title="Inventaire détaillé"
+        subtitle="Détail par classe d’actifs — immobilier, financier, professionnel et passif." />
+
+      {/* Actifs immobiliers */}
+      {bilan.actif.immobilier.length > 0 && (
+        <View style={{ marginBottom: 20 }}>
+          <Text style={s.subLabel}>ACTIFS IMMOBILIERS</Text>
+          <View style={s.table}>
+            <View style={s.tableHead}>
+              <Text style={{ ...s.tableHeadCell, flex: 2 }}>BIEN</Text>
+              <Text style={{ ...s.tableHeadCell, flex: 1 }}>LOCALISATION</Text>
+              <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>VALEUR ESTIMÉE</Text>
+            </View>
+            {bilan.actif.immobilier.map((bien) => {
+              const IMMO_TYPE_LABELS: Record<string, string> = {
+                residence_principale: 'Résidence principale',
+                residence_secondaire: 'Résidence secondaire',
+                locatif_nu: 'Bien locatif (nu)',
+                locatif_meuble: 'Bien locatif (meublé)',
+                lmnp: 'LMNP',
+                locatif: 'Bien locatif',
+                scpi: 'SCPI',
+                terrain: 'Terrain',
+                autre: 'Autre',
+              }
+              const pv = bien.prixAcquisition > 0 ? bien.valeurEstimee - bien.prixAcquisition : null
+              const isLocatif = ['locatif_nu', 'locatif_meuble', 'lmnp', 'locatif'].includes(bien.type)
+              const rend = isLocatif && bien.loyerMensuel > 0 && bien.valeurEstimee > 0
+                ? `${((bien.loyerMensuel * 12 / bien.valeurEstimee) * 100).toFixed(1)} %`
+                : null
+              const meta: string[] = []
+              if (pv !== null) meta.push(`PV : ${fmtEur(pv)}`)
+              if (rend) meta.push(`Rend. : ${rend}`)
+              return (
+                <View key={bien.id} style={s.tableRow}>
+                  <View style={{ flex: 2 }}>
+                    <Text style={s.tableLabel}>{bien.libelle || IMMO_TYPE_LABELS[bien.type] || bien.type}</Text>
+                    {meta.length > 0 && (
+                      <Text style={{ fontSize: 7.5, color: C.INK_LIGHT, marginTop: 2 }}>{meta.join('  ·  ')}</Text>
+                    )}
+                  </View>
+                  <Text style={{ flex: 1, fontSize: 9.5, color: C.INK_MED }}>{bien.adresse || '—'}</Text>
+                  <Text style={s.tableValue}>{fmtEur(bien.valeurEstimee)}</Text>
+                </View>
+              )
+            })}
+            <View style={s.tableTotal}>
+              <Text style={{ flex: 2, fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: C.INK }}>Sous-total immobilier</Text>
+              <Text style={{ flex: 2, fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: C.INK, textAlign: 'right' }}>{fmtEur(calc.totalActifImmobilier)}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Actifs financiers */}
+      {bilan.actif.financier.length > 0 && (
+        <View style={{ marginBottom: 20 }}>
+          <Text style={s.subLabel}>ACTIFS FINANCIERS</Text>
+          <View style={s.table}>
+            <View style={s.tableHead}>
+              <Text style={{ ...s.tableHeadCell, flex: 2 }}>POSTE</Text>
+              <Text style={{ ...s.tableHeadCell, flex: 1 }}>GESTION</Text>
+              <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>VALEUR</Text>
+            </View>
+            {bilan.actif.financier.map((fin) => {
+              const FIN_TYPE_LABELS: Record<string, string> = {
+                assurance_vie: 'Assurance-vie',
+                pea: 'PEA',
+                per: 'PER',
+                compte_titres: 'Compte-titres',
+                livret_a: 'Livret A',
+                ldds: 'LDDS',
+                lep: 'LEP',
+                pel: 'PEL',
+                cel: 'CEL',
+                crypto: 'Crypto-actifs',
+                crowdfunding: 'Crowdfunding',
+                livrets: 'Livrets réglementés',
+                autre: 'Autre',
+              }
+              // Compat ascendante : description→libelle, valeurRachat→valeur, compagnie→etablissement
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const f = fin as any
+              const libelle = f.libelle || f.description || FIN_TYPE_LABELS[fin.type] || fin.type
+              const etab = f.etablissement || f.compagnie
+              const valeur = typeof f.valeur === 'number' ? f.valeur : (typeof f.valeurRachat === 'number' ? f.valeurRachat : 0)
+              return (
+                <View key={fin.id} style={s.tableRow}>
+                  <Text style={{ ...s.tableLabel, flex: 2 }}>
+                    {libelle}{etab ? ` — ${etab}` : ''}
+                  </Text>
+                  <Text style={{ flex: 1, fontSize: 9.5, color: C.INK_MED }}>
+                    {fin.beneficiaires ? 'Désign. bén.' : '—'}
+                  </Text>
+                  <Text style={s.tableValue}>{fmtEur(valeur)}</Text>
+                </View>
+              )
+            })}
+            <View style={s.tableTotal}>
+              <Text style={{ flex: 2, fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: C.INK }}>Sous-total financier</Text>
+              <Text style={{ flex: 2, fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: C.INK, textAlign: 'right' }}>{fmtEur(calc.totalActifFinancier)}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Actifs professionnels */}
+      {bilan.actif.professionnel.length > 0 && (
+        <View style={{ marginBottom: 20 }}>
+          <Text style={s.subLabel}>ACTIFS PROFESSIONNELS</Text>
+          <View style={s.table}>
+            <View style={s.tableHead}>
+              <Text style={{ ...s.tableHeadCell, flex: 2 }}>BIEN</Text>
+              <Text style={{ ...s.tableHeadCell, flex: 1 }}>NATURE</Text>
+              <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>VALEUR ESTIMÉE</Text>
+            </View>
+            {bilan.actif.professionnel.map((pro) => (
+              <View key={pro.id} style={s.tableRow}>
+                <Text style={{ ...s.tableLabel, flex: 2 }}>
+                  {pro.libelle}{pro.pourcentageDetention ? ` (${pro.pourcentageDetention} %)` : ''}
+                </Text>
+                <Text style={{ flex: 1, fontSize: 9.5, color: C.INK_MED }}>{pro.type || '—'}</Text>
+                <Text style={s.tableValue}>{fmtEur(pro.valeurEstimee)}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Passif */}
+      {(bilan.passif.credits.length > 0 || bilan.passif.autresDettes > 0) && (
+        <View style={{ marginBottom: 0 }}>
+          <Text style={s.subLabel}>PASSIF</Text>
+          <View style={s.table}>
+            <View style={s.tableHead}>
+              <Text style={{ ...s.tableHeadCell, flex: 2 }}>ENGAGEMENT</Text>
+              <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>MONTANT</Text>
+            </View>
+            {bilan.passif.credits.map((credit) => {
+              const CREDIT_TYPE_LABELS: Record<string, string> = {
+                immobilier: 'Crédit immobilier',
+                consommation: 'Crédit consommation',
+                professionnel: 'Dette professionnelle',
+                autre: 'Autre engagement',
+              }
+              const label = credit.libelle || CREDIT_TYPE_LABELS[credit.type] || credit.type
+              return (
+                <View key={credit.id} style={s.tableRow}>
+                  <Text style={{ ...s.tableLabel, flex: 2 }}>
+                    {label}{credit.etablissement ? ` — ${credit.etablissement}` : ''}
+                    {credit.tauxInteret ? `  ·  Taux : ${credit.tauxInteret} %` : ''}
+                  </Text>
+                  <Text style={{ ...s.tableValue, color: C.NEG }}>{fmtEur(credit.capitalRestantDu)}</Text>
+                </View>
+              )
+            })}
+            {bilan.passif.autresDettes > 0 && (
+              <View style={s.tableRow}>
+                <Text style={{ ...s.tableLabel, flex: 2 }}>Autres dettes</Text>
+                <Text style={{ ...s.tableValue, color: C.NEG }}>{fmtEur(bilan.passif.autresDettes)}</Text>
+              </View>
+            )}
+            <View style={s.tableTotal}>
+              <Text style={{ flex: 2, fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: C.NEG }}>Total passif</Text>
+              <Text style={{ flex: 1, fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: C.NEG, textAlign: 'right' }}>{fmtEur(calc.totalPassif)}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      <PageFooter cabinet={cabinet} />
+    </Page>
+  )
+}
+
+// ─── Revenus & Charges ────────────────────────────────────────────────────────
 function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
   const r = bilan.revenusCharges.revenus
   const c = bilan.revenusCharges.charges
 
   const revenusItems = [
-    { label: 'Salaires nets',          value: r.salaireNet },
-    { label: 'BIC / BNC',              value: r.bicBnc },
-    { label: 'Revenus fonciers',        value: r.revenusFonciers },
-    { label: 'Dividendes',             value: r.dividendes },
-    { label: 'Plus-values',            value: r.plusValues },
-    { label: 'Pensions / retraites',   value: r.pensions },
-    { label: 'Autres revenus',         value: r.autresRevenus },
+    { label: 'Salaires nets',         value: r.salaireNet },
+    { label: 'BIC / BNC',             value: r.bicBnc },
+    { label: 'Revenus fonciers',       value: r.revenusFonciers },
+    { label: 'Dividendes',            value: r.dividendes },
+    { label: 'Plus-values',           value: r.plusValues },
+    { label: 'Pensions / retraites',  value: r.pensions },
+    { label: 'Autres revenus',        value: r.autresRevenus },
   ].filter(item => item.value > 0)
 
   const chargesItems = [
@@ -683,161 +825,180 @@ function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCa
     { label: 'Autres charges fixes',   value: c.autresCharges },
   ].filter(item => item.value > 0)
 
+  const solde = calc.capaciteEpargneMensuelle
+
   return (
     <Page size="A4" style={s.page}>
-      <PageHeader cabinet={cabinet} clientName={clientName} />
-      <SectionHeading
-        num="03"
-        slug="Revenus &amp; Charges"
-        title="Revenus &amp; Charges"
-      />
+      <PageHeader cabinet={cabinet} clientName={clientName} docTitle="Bilan patrimonial" />
+      <SectionHeading num="04" slug="Revenus &amp; Charges" title="Revenus &amp; capacité d’épargne"
+        subtitle="Flux annuels du foyer — revenus, charges et solde mensuel disponible." />
 
-      {/* Revenus foyer callout */}
-      {calc.revenusFoyerAnnuels > 0 && (
-        <View style={{ ...s.callout, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={s.calloutLabel}>REVENUS DU FOYER ANNUELS</Text>
-          <Text style={{ fontFamily: 'Times-Roman', fontSize: 20, color: C.INK }}>{fmtEur(calc.revenusFoyerAnnuels)}</Text>
+      {/* KPI revenus */}
+      <View style={{ ...s.kpiRow, marginBottom: 24 }}>
+        <View style={s.kpiCard}>
+          <Text style={s.kpiLabel}>REVENUS ANNUELS</Text>
+          <Text style={{ ...s.kpiValue, color: C.POS }}>{fmtEur(calc.revenusMensuelsTotaux * 12)}</Text>
+          <Text style={s.kpiSub}>{fmtEur(calc.revenusMensuelsTotaux)} / mois</Text>
         </View>
-      )}
-
-      {/* Revenus / Charges side by side */}
-      <View style={{ flexDirection: 'row', gap: 20, marginBottom: 20 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={s.subLabel}>REVENUS ANNUELS</Text>
-          {revenusItems.map((item, i) => (
-            <View key={i} style={{ ...s.tableRow }}>
-              <Text style={{ ...s.tableLabel, fontSize: 9 }}>{item.label}</Text>
-              <Text style={{ ...s.tableValue, fontSize: 9, color: C.POS }}>{fmtEur(item.value)}</Text>
-            </View>
-          ))}
-          <View style={s.tableTotal}>
-            <Text style={{ flex: 2, fontSize: 9, fontFamily: 'Helvetica-Bold' }}>Total annuel</Text>
-            <Text style={{ flex: 1, fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.POS, textAlign: 'right' }}>{fmtEur(calc.revenusMensuelsTotaux * 12)}</Text>
-          </View>
+        <View style={s.kpiCard}>
+          <Text style={s.kpiLabel}>CHARGES ANNUELLES</Text>
+          <Text style={{ ...s.kpiValue, color: C.INK }}>{fmtEur(calc.chargesMensuellesTotales * 12)}</Text>
+          <Text style={s.kpiSub}>{fmtEur(calc.chargesMensuellesTotales)} / mois</Text>
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={s.subLabel}>CHARGES ANNUELLES</Text>
-          {chargesItems.map((item, i) => (
-            <View key={i} style={{ ...s.tableRow }}>
-              <Text style={{ ...s.tableLabel, fontSize: 9 }}>{item.label}</Text>
-              <Text style={{ ...s.tableValue, fontSize: 9, color: C.NEG }}>{fmtEur(item.value)}</Text>
-            </View>
-          ))}
-          <View style={s.tableTotal}>
-            <Text style={{ flex: 2, fontSize: 9, fontFamily: 'Helvetica-Bold' }}>Total annuel</Text>
-            <Text style={{ flex: 1, fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.NEG, textAlign: 'right' }}>{fmtEur(calc.chargesMensuellesTotales * 12)}</Text>
-          </View>
+        <View style={{ ...s.kpiCard, borderLeftWidth: 2, borderLeftColor: solde >= 0 ? C.POS : C.NEG }}>
+          <Text style={s.kpiLabel}>CAPACITÉ D’ÉPARGNE</Text>
+          <Text style={{ ...s.kpiValue, color: solde >= 0 ? C.POS : C.NEG }}>{fmtEur(solde)}</Text>
+          <Text style={s.kpiSub}>Par mois</Text>
         </View>
       </View>
 
-      {/* Capacité épargne */}
-      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
-        <View style={{ flex: 1, padding: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
-          <Text style={s.kpiLabel}>CAPACITÉ D’ÉPARGNE MENSUELLE</Text>
-          <Text style={{ ...s.kpiValue, fontSize: 17, color: calc.capaciteEpargneMensuelle >= 0 ? C.POS : C.NEG }}>
-            {fmtEur(calc.capaciteEpargneMensuelle)}
-          </Text>
-        </View>
-        {calc.tauxEndettement > 0 && (
-          <View style={{ flex: 1, padding: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
-            <Text style={s.kpiLabel}>TAUX D’ENDETTEMENT</Text>
-            <Text style={{ ...s.kpiValue, fontSize: 17, color: calc.tauxEndettement > 35 ? C.NEG : C.POS }}>
-              {calc.tauxEndettement.toFixed(1)} %
-            </Text>
+      {/* Tableau revenus / charges côte à côte */}
+      <View style={{ flexDirection: 'row', gap: 24, marginBottom: 20 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={s.subLabel}>DÉTAIL REVENUS ANNUELS</Text>
+          <View style={s.table}>
+            {revenusItems.map((item, i) => (
+              <View key={i} style={s.tableRow}>
+                <Text style={{ ...s.tableLabel, fontSize: 9 }}>{item.label}</Text>
+                <Text style={{ ...s.tableValue, fontSize: 9, color: C.POS }}>{fmtEur(item.value)}</Text>
+              </View>
+            ))}
+            <View style={s.tableTotal}>
+              <Text style={{ flex: 2, fontSize: 9, fontFamily: 'Helvetica-Bold' }}>Total annuel</Text>
+              <Text style={{ flex: 1, fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.POS, textAlign: 'right' }}>
+                {fmtEur(calc.revenusMensuelsTotaux * 12)}
+              </Text>
+            </View>
           </View>
-        )}
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={s.subLabel}>DÉTAIL CHARGES ANNUELLES</Text>
+          <View style={s.table}>
+            {chargesItems.map((item, i) => (
+              <View key={i} style={s.tableRow}>
+                <Text style={{ ...s.tableLabel, fontSize: 9 }}>{item.label}</Text>
+                <Text style={{ ...s.tableValue, fontSize: 9, color: C.INK_MED }}>{fmtEur(item.value)}</Text>
+              </View>
+            ))}
+            <View style={s.tableTotal}>
+              <Text style={{ flex: 2, fontSize: 9, fontFamily: 'Helvetica-Bold' }}>Total annuel</Text>
+              <Text style={{ flex: 1, fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.INK_MED, textAlign: 'right' }}>
+                {fmtEur(calc.chargesMensuellesTotales * 12)}
+              </Text>
+            </View>
+          </View>
+        </View>
       </View>
 
       {/* Revenus conjoint */}
       {bilan.revenusCharges.revenus.salaireNetConjoint > 0 && (
-        <View style={{ ...s.callout, borderLeftColor: C.FOREST_MED }}>
-          <Text style={{ ...s.calloutLabel, color: C.FOREST_MED }}>REVENUS DU CONJOINT</Text>
+        <View style={{ ...s.callout, borderLeftColor: C.FOREST_2 }}>
+          <Text style={{ ...s.calloutLabel, color: C.FOREST_2 }}>REVENUS DU CONJOINT</Text>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={{ fontSize: 9, color: C.INK }}>Salaires nets</Text>
-            <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.INK }}>{fmtEur(bilan.revenusCharges.revenus.salaireNetConjoint)}</Text>
+            <Text style={{ fontSize: 9.5, color: C.INK }}>Salaires nets</Text>
+            <Text style={{ fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: C.INK }}>
+              {fmtEur(bilan.revenusCharges.revenus.salaireNetConjoint)}
+            </Text>
           </View>
         </View>
       )}
+
+      <PageFooter cabinet={cabinet} />
     </Page>
   )
 }
 
-// ─── Analyse Fiscale & Succession ─────────────────────────────────────────
+// ─── Analyse fiscale & succession ────────────────────────────────────────────
 function FiscalitePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
   const f = bilan.fiscalite
 
   return (
     <Page size="A4" style={s.page}>
-      <PageHeader cabinet={cabinet} clientName={clientName} />
-      <SectionHeading
-        num="04"
-        slug="Fiscalité"
-        title="Analyse Fiscale &amp; Succession"
-      />
+      <PageHeader cabinet={cabinet} clientName={clientName} docTitle="Bilan patrimonial" />
+      <SectionHeading num="05" slug="Fiscalité" title="Analyse fiscale &amp; succession"
+        subtitle="Tranche marginale d’imposition, IFI et transmission." />
 
-      {/* TMI + IFI + actif net */}
-      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
-        <View style={{ flex: 1, padding: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
-          <Text style={s.kpiLabel}>TMI</Text>
-          <Text style={{ ...s.kpiValue, fontSize: 22 }}>{calc.tmi} %</Text>
-          <Text style={s.kpiSub}>Tranche marginale d’imposition</Text>
+      {/* Cartes TMI / IFI / succession */}
+      <View style={{ ...s.kpiRow, marginBottom: 24 }}>
+        <View style={s.kpiCard}>
+          <Text style={s.kpiLabel}>TRANCHE MARGINALE</Text>
+          <Text style={{ ...s.kpiValue, fontSize: 26 }}>{calc.tmi} %</Text>
+          <Text style={s.kpiSub}>Taux marginal d’imposition</Text>
         </View>
-        {calc.isAssujettisIFI && (
-          <View style={{ flex: 1, padding: 12, borderWidth: 0.5, borderColor: C.NEG }}>
+        {calc.isAssujettisIFI ? (
+          <View style={{ ...s.kpiCard, borderLeftWidth: 2, borderLeftColor: C.NEG }}>
             <Text style={{ ...s.kpiLabel, color: C.NEG }}>IFI ESTIMÉ</Text>
             <Text style={{ ...s.kpiValue, fontSize: 22, color: C.NEG }}>{fmtEur(calc.estimationIFI)}</Text>
             <Text style={s.kpiSub}>Assujetti à l’IFI</Text>
           </View>
+        ) : (
+          <View style={s.kpiCard}>
+            <Text style={s.kpiLabel}>IFI</Text>
+            <Text style={{ ...s.kpiValue, fontSize: 16, color: C.POS }}>Non assujetti</Text>
+            <Text style={s.kpiSub}>Seuil de 1 300 000 € non atteint</Text>
+          </View>
         )}
-        <View style={{ flex: 1, padding: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
-          <Text style={s.kpiLabel}>ACTIF NET SUCCESSORAL</Text>
+        <View style={s.kpiCard}>
+          <Text style={s.kpiLabel}>ACTIF SUCCESSORAL</Text>
           <Text style={{ ...s.kpiValue, fontSize: 16 }}>{fmtEur(calc.actifNetSuccessoral)}</Text>
-          <Text style={s.kpiSub}>Base de calcul succession</Text>
+          <Text style={s.kpiSub}>Base de calcul</Text>
         </View>
       </View>
 
-      {/* Succession */}
+      {/* Héritiers */}
       {f.heritiers.length > 0 && (
-        <View style={{ marginBottom: 18 }}>
+        <View style={{ marginBottom: 20 }}>
           <Text style={s.subLabel}>SUCCESSION ESTIMÉE</Text>
           <View style={s.table}>
+            <View style={s.tableHead}>
+              <Text style={{ ...s.tableHeadCell, flex: 2 }}>HÉRITIER</Text>
+              <Text style={{ ...s.tableHeadCell, flex: 1, textAlign: 'right' }}>ABATTEMENT</Text>
+            </View>
             {f.heritiers.map((h) => (
               <View key={h.id} style={s.tableRow}>
                 <Text style={s.tableLabel}>{h.prenom || h.lien}</Text>
-                <Text style={s.tableValue}>{h.lien === 'conjoint' ? 'Exonéré' : `Abattement : ${fmtEur(h.abattementRestant)}`}</Text>
+                <Text style={s.tableValue}>
+                  {h.lien === 'conjoint' ? 'Exonéré' : fmtEur(h.abattementRestant)}
+                </Text>
               </View>
             ))}
           </View>
-          <View style={{ padding: 10, borderWidth: 0.5, borderColor: C.BORDER, marginTop: 4 }}>
-            <Text style={{ fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: C.INK }}>
-              Droits estimés total : {fmtEur(calc.droitsSuccessionEstimes)}
-            </Text>
-            <Text style={{ fontSize: 8, color: C.INK_MED, marginTop: 3 }}>
-              Estimation indicative — ne se substitue pas au calcul notarial
-            </Text>
-          </View>
+
+          {calc.droitsSuccessionEstimes > 0 && (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+              <Text style={{ fontSize: 9, color: C.INK_MED }}>
+                Droits estimés — indicatif, ne se substitue pas au calcul notarial
+              </Text>
+              <Text style={{ fontSize: 9.5, fontFamily: 'Helvetica-Bold', color: C.INK }}>
+                {fmtEur(calc.droitsSuccessionEstimes)}
+              </Text>
+            </View>
+          )}
         </View>
       )}
 
       {f.strategieSuccession ? (
-        <View style={{ ...s.callout, marginBottom: 12 }}>
+        <View style={{ ...s.callout, marginBottom: 14 }}>
           <Text style={s.calloutLabel}>STRATÉGIE DE SUCCESSION</Text>
           <Text style={s.calloutText}>{f.strategieSuccession}</Text>
         </View>
       ) : null}
 
       {f.observationsFiscales ? (
-        <View style={{ ...s.callout }}>
+        <View style={s.callout}>
           <Text style={s.calloutLabel}>OBSERVATIONS FISCALES</Text>
           <Text style={s.calloutText}>{f.observationsFiscales}</Text>
         </View>
       ) : null}
+
+      <PageFooter cabinet={cabinet} />
     </Page>
   )
 }
 
-// ─── Profil de risque & Objectifs ────────────────────────────────────────────
+// ─── Profil de risque MIF2 & Objectifs ───────────────────────────────────────
 function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: ParametresCabinet }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
   const pr = bilan.profilRisque
@@ -859,53 +1020,60 @@ function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Pa
   const HORIZON_LABELS: Record<string, string> = {
     moins_1an: 'Moins d’1 an', '1_3ans': '1 à 3 ans',
     '3_5ans': '3 à 5 ans', plus_5ans: 'Plus de 5 ans',
+    '5_10ans': '5 à 10 ans', '5_10_ans': '5 à 10 ans', plus_10ans: 'Plus de 10 ans',
   }
   const EXP_LABELS: Record<string, string> = {
     debutant: 'Débutant', intermediaire: 'Intermédiaire',
     experimente: 'Expérimenté', expert: 'Expert',
   }
-  const ILLIQ_LABELS: Record<string, string> = {
-    moins_10: 'Moins de 10 %', '10_30': '10 à 30 %',
-    '30_60': '30 à 60 %', plus_60: 'Plus de 60 %',
+  const DELAI_LABELS: Record<string, string> = {
+    moins_3ans: 'Moins de 3 ans', '3_5ans': '3 à 5 ans',
+    '5_10ans': '5 à 10 ans', plus_10ans: 'Plus de 10 ans',
   }
   const CLASS_LABELS: Record<string, string> = {
     non_professionnel: 'Client non professionnel',
     professionnel: 'Client professionnel',
     contrepartie_eligible: 'Contrepartie éligible',
   }
-  const DELAI_LABELS: Record<string, string> = {
-    moins_3ans: 'Moins de 3 ans', '3_5ans': '3 à 5 ans',
-    '5_10ans': '5 à 10 ans', plus_10ans: 'Plus de 10 ans',
-  }
 
   const profilColor = pr.resultat ? (PROFIL_COLORS[pr.resultat] || C.INK) : C.INK
 
   return (
     <Page size="A4" style={s.page}>
-      <PageHeader cabinet={cabinet} clientName={clientName} />
-      <SectionHeading num="05" slug="Profil &amp; Objectifs" title="Profil de Risque &amp; Objectifs" />
+      <PageHeader cabinet={cabinet} clientName={clientName} docTitle="Bilan patrimonial" />
+      <SectionHeading num="06" slug="Profil &amp; Objectifs" title="Profil de risque &amp; objectifs"
+        subtitle="Questionnaire MIF 2 — classification investisseur et objectifs patrimoniaux." />
 
       {/* Profil MIF2 */}
       {pr.resultat ? (
-        <View style={{ ...s.callout, borderLeftColor: profilColor, marginBottom: 22 }}>
-          <Text style={s.subLabel}>PROFIL MIF2</Text>
-          <Text style={{ fontFamily: 'Times-Roman', fontSize: 26, color: profilColor, marginBottom: 10, lineHeight: 1 }}>
+        <View style={{ ...s.callout, marginBottom: 22 }}>
+          <Text style={s.calloutLabel}>PROFIL MIF 2</Text>
+          <Text style={{ fontFamily: 'Times-Roman', fontSize: 28, color: profilColor, marginBottom: 12, lineHeight: 1 }}>
             {PROFIL_LABELS[pr.resultat] || pr.resultat}
           </Text>
-          <View style={{ flexDirection: 'row', gap: 20, flexWrap: 'wrap', marginBottom: 8 }}>
-            {pr.objectif   && <Text style={{ fontSize: 8, color: C.INK_MED }}>Objectif : {OBJECTIF_LABELS[pr.objectif] || pr.objectif}</Text>}
-            {pr.horizon    && <Text style={{ fontSize: 8, color: C.INK_MED }}>Horizon : {HORIZON_LABELS[pr.horizon] || pr.horizon}</Text>}
-            {pr.experience && <Text style={{ fontSize: 8, color: C.INK_MED }}>Expérience : {EXP_LABELS[pr.experience] || pr.experience}</Text>}
-            {pr.toleranceIlliquidite && <Text style={{ fontSize: 8, color: C.INK_MED }}>Illiquidité : {ILLIQ_LABELS[pr.toleranceIlliquidite] || pr.toleranceIlliquidite}</Text>}
+          <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
+            {pr.objectif    && <Text style={{ fontSize: 8, color: C.INK_MED }}>Objectif : {OBJECTIF_LABELS[pr.objectif] || pr.objectif}</Text>}
+            {pr.horizon     && <Text style={{ fontSize: 8, color: C.INK_MED }}>Horizon : {HORIZON_LABELS[pr.horizon] || pr.horizon}</Text>}
+            {pr.experience  && <Text style={{ fontSize: 8, color: C.INK_MED }}>Expérience : {EXP_LABELS[pr.experience] || pr.experience}</Text>}
             {pr.classificationClient && <Text style={{ fontSize: 8, color: C.INK_MED }}>{CLASS_LABELS[pr.classificationClient] || pr.classificationClient}</Text>}
           </View>
-          {(pr.revenuAnnuelConfirme > 0 || pr.patrimoineFinancierConfirme > 0 || pr.chargesFixesConfirmees > 0) && (
-            <View style={{ flexDirection: 'row', gap: 16, paddingTop: 8, borderTopWidth: 0.5, borderTopColor: C.BORDER, flexWrap: 'wrap' }}>
-              {pr.revenuAnnuelConfirme    > 0 && <Text style={{ fontSize: 8, color: C.INK_MED }}>Revenu confirmé : {fmtEur(pr.revenuAnnuelConfirme)}</Text>}
-              {pr.patrimoineFinancierConfirme > 0 && <Text style={{ fontSize: 8, color: C.INK_MED }}>Patrimoine financier confirmé : {fmtEur(pr.patrimoineFinancierConfirme)}</Text>}
-              {pr.chargesFixesConfirmees  > 0 && <Text style={{ fontSize: 8, color: C.INK_MED }}>Charges fixes confirmées : {fmtEur(pr.chargesFixesConfirmees)}</Text>}
-            </View>
-          )}
+          {pr.capacitePertes ? (() => {
+            const PERTES_LABELS: Record<string, string> = {
+              zero: 'Aucune perte acceptable (0 %)',
+              dix: 'Jusqu’à -10 %',
+              vingtcinq: 'Jusqu’à -25 %',
+              cinquante: 'Jusqu’à -50 % ou plus',
+              moins_10: 'Jusqu’à -10 %',
+              moins_25: 'Jusqu’à -25 %',
+              moins_50: 'Jusqu’à -50 % ou plus',
+            }
+            const label = PERTES_LABELS[pr.capacitePertes] || pr.capacitePertes.replace(/_/g, ' ').replace('pct', ' %')
+            return (
+              <Text style={{ fontSize: 8, color: C.INK_MED, paddingTop: 8, borderTopWidth: 0.5, borderTopColor: C.BORDER }}>
+                Capacité à supporter les pertes : {label}
+              </Text>
+            )
+          })() : null}
         </View>
       ) : null}
 
@@ -915,29 +1083,27 @@ function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Pa
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <Text style={s.subLabel}>OBJECTIFS PATRIMONIAUX</Text>
             {bilan.objectifs.preferencesESG && (
-              <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderWidth: 0.5, borderColor: C.FOREST }}>
-                <Text style={{ fontSize: 7, color: C.FOREST, letterSpacing: 0.8 }}>PRÉFÉRENCES ESG</Text>
-              </View>
+              <Text style={{ fontSize: 6.5, color: C.FOREST, letterSpacing: 1 }}>PRÉFÉRENCES ESG</Text>
             )}
           </View>
-          <View style={{ gap: 6 }}>
+          <View style={s.table}>
             {objectifsSelected.map((obj, idx) => {
               const meta: string[] = []
               if (obj.montantCible > 0) meta.push(fmtEur(obj.montantCible))
-              if (obj.delaiCible) meta.push(DELAI_LABELS[obj.delaiCible] || obj.delaiCible.replace(/_/g, ' '))
+              if (obj.delaiCible) meta.push(DELAI_LABELS[obj.delaiCible] || obj.delaiCible.replace(/_/g, ' '))
               return (
-                <View key={obj.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12, borderWidth: 0.5, borderColor: C.BORDER }}>
-                  <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.GOLD, marginRight: 14, width: 16 }}>
+                <View key={obj.id} style={s.tableRow}>
+                  <Text style={{ fontSize: 8, color: C.GOLD, marginRight: 14, width: 18, fontFamily: 'Helvetica-Bold' }}>
                     {String(idx + 1).padStart(2, '0')}
                   </Text>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 9.5, color: C.INK }}>{obj.libelle}</Text>
                     {meta.length > 0 && (
-                      <Text style={{ fontSize: 8, color: C.INK_MED, marginTop: 2 }}>{meta.join('  ·  ')}</Text>
+                      <Text style={{ fontSize: 7.5, color: C.INK_MED, marginTop: 2 }}>{meta.join('  ·  ')}</Text>
                     )}
                   </View>
                   {obj.priorite ? (
-                    <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: PRIORITE_COLORS[obj.priorite] || C.INK_LIGHT }}>
+                    <Text style={{ fontSize: 8, color: PRIORITE_COLORS[obj.priorite] || C.INK_LIGHT, fontFamily: 'Helvetica-Bold' }}>
                       {obj.priorite.charAt(0).toUpperCase() + obj.priorite.slice(1)}
                     </Text>
                   ) : null}
@@ -954,72 +1120,93 @@ function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Pa
           <Text style={s.calloutText}>{bilan.objectifs.commentaires}</Text>
         </View>
       ) : null}
+
+      <PageFooter cabinet={cabinet} />
     </Page>
   )
 }
 
-// ─── Recommandations & Mentions légales ─────────────────────────────────────
-function RecommandationsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: ParametresCabinet }) {
+// ─── Mentions légales & signature ─────────────────────────────────────────────
+function MentionsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: ParametresCabinet }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
+  const clientFull = [bilan.identite.civilite, bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ')
   const conseiller = [cabinet.prenomConseiller, cabinet.nomConseiller].filter(Boolean).join(' ')
-  const dateStr = new Date().toLocaleDateString('fr-FR')
+  const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  const nomCabinet = cabinet.nomCabinet || 'Charlie'
 
   return (
     <Page size="A4" style={s.page}>
-      <PageHeader cabinet={cabinet} clientName={clientName} />
+      <PageHeader cabinet={cabinet} clientName={clientName} docTitle="Bilan patrimonial" />
 
       {bilan.objectifs.recommandations ? (
-        <View style={{ marginBottom: 28 }}>
-          <SectionHeading num="06" slug="Recommandations" title="Recommandations" />
-          <Text style={{ fontSize: 10, color: C.INK, lineHeight: 1.8, fontFamily: 'Helvetica' }}>
+        <View style={{ marginBottom: 32 }}>
+          <SectionHeading num="07" slug="Recommandations" title="Recommandations" />
+          <Text style={{ fontSize: 10, color: C.INK, lineHeight: 1.8 }}>
             {bilan.objectifs.recommandations}
           </Text>
         </View>
-      ) : null}
+      ) : (
+        <SectionHeading num="07" slug="Mentions" title="Mentions réglementaires"
+          subtitle="Informations légales et conditions d’utilisation du présent document." />
+      )}
 
-      {/* Signatures */}
-      <View style={{ marginTop: 28, paddingTop: 20, borderTopWidth: 0.5, borderTopColor: C.BORDER_DARK }}>
-        <Text style={{ fontFamily: 'Times-Roman', fontSize: 16, color: C.INK, marginBottom: 20 }}>Signatures</Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{ width: '44%' }}>
-            <Text style={{ fontSize: 9, color: C.INK_MED, marginBottom: 30 }}>Signature du client :</Text>
-            <View style={{ borderBottomWidth: 0.5, borderBottomColor: C.INK }} />
-            <Text style={{ fontSize: 8, color: C.INK_MED, marginTop: 5 }}>
-              {[bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ')}
-            </Text>
-          </View>
-          <View style={{ width: '44%' }}>
-            <Text style={{ fontSize: 9, color: C.INK_MED, marginBottom: 30 }}>Signature du conseiller :</Text>
-            <View style={{ borderBottomWidth: 0.5, borderBottomColor: C.INK }} />
-            <Text style={{ fontSize: 8, color: C.INK_MED, marginTop: 5 }}>
-              {[cabinet.prenomConseiller, cabinet.nomConseiller].filter(Boolean).join(' ')}
-            </Text>
-          </View>
-        </View>
-        <Text style={{ fontSize: 8, color: C.INK_MED, marginTop: 14 }}>
-          Fait à _____________, le {dateStr}
-        </Text>
-      </View>
-
-      {/* Footer legal */}
-      <View style={{ marginTop: 'auto', paddingTop: 20, borderTopWidth: 0.5, borderTopColor: C.BORDER }}>
-        <Text style={{ fontSize: 7.5, color: C.INK_LIGHT, marginBottom: 3 }}>
-          Document établi le {dateStr}{conseiller ? ` par ${conseiller}` : ''}{cabinet.nomCabinet ? `, ${cabinet.nomCabinet}` : ''}.
+      {/* Bloc légal */}
+      <View style={{ marginBottom: 28 }}>
+        <Text style={{ fontSize: 9, color: C.INK, lineHeight: 1.7, marginBottom: 12 }}>
+          {`Ce bilan patrimonial est destiné exclusivement à `}
+          <Text style={{ fontFamily: 'Helvetica-Bold' }}>{clientFull}</Text>
+          {` et ne peut être transmis à des tiers sans autorisation préalable écrite de ${nomCabinet}.`}
         </Text>
         {cabinet.numeroOrias ? (
-          <Text style={{ fontSize: 7.5, color: C.INK_LIGHT, marginBottom: 3 }}>
-            Conseiller en Gestion de Patrimoine immatriculé à l’ORIAS sous le numéro {cabinet.numeroOrias} (www.orias.fr).
+          <Text style={{ fontSize: 9, color: C.INK_MED, lineHeight: 1.7, marginBottom: 10 }}>
+            {`${nomCabinet} — Conseiller en Gestion de Patrimoine immatriculé à l’ORIAS sous le numéro `}
+            <Text style={{ fontFamily: 'Helvetica-Bold' }}>{cabinet.numeroOrias}</Text>
+            {` (www.orias.fr).`}
           </Text>
         ) : null}
-        <Text style={{ fontSize: 7.5, color: C.INK_LIGHT, lineHeight: 1.5 }}>
-          {cabinet.mentionsLegales || 'Ce document est établi à titre informatif. Il ne constitue pas un conseil en investissement au sens de la réglementation MIF2.'}
+        <Text style={{ fontSize: 9, color: C.INK_MED, lineHeight: 1.7 }}>
+          {cabinet.mentionsLegales ||
+            'Les informations contenues dans ce document sont fournies à titre indicatif. Elles ne constituent pas un conseil en investissement au sens de la directive MIF 2. Les performances passées ne préjugent pas des performances futures.'}
         </Text>
       </View>
+
+      {/* Signatures */}
+      <View style={{
+        borderTopWidth: 0.5,
+        borderTopColor: C.BORDER_DARK,
+        paddingTop: 24,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      }}>
+        <View style={{ width: '44%' }}>
+          <Text style={{ fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: C.INK, marginBottom: 36 }}>
+            {nomCabinet.toUpperCase()}
+          </Text>
+          <View style={{ borderBottomWidth: 0.5, borderBottomColor: C.BORDER_DARK }} />
+          <Text style={{ fontSize: 8.5, color: C.INK, marginTop: 6 }}>
+            {conseiller || nomCabinet}
+          </Text>
+          {cabinet.fonction ? (
+            <Text style={{ fontSize: 7.5, color: C.INK_MED }}>{cabinet.fonction}</Text>
+          ) : null}
+        </View>
+        <View style={{ width: '44%' }}>
+          <Text style={{ fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: C.INK, marginBottom: 36 }}>
+            CACHET
+          </Text>
+          <View style={{ borderBottomWidth: 0.5, borderBottomColor: C.BORDER_DARK }} />
+          <Text style={{ fontSize: 8, color: C.INK_LIGHT, marginTop: 6, fontStyle: 'italic' }}>
+            {`Paris, le ${dateStr}`}
+          </Text>
+        </View>
+      </View>
+
+      <PageFooter cabinet={cabinet} />
     </Page>
   )
 }
 
-// ─── Main document ────────────────────────────────────────────────────────────
+// ─── Document principal ───────────────────────────────────────────────────────
 export interface BilanPDFProps {
   bilan: BilanData
   cabinet: ParametresCabinet
@@ -1027,20 +1214,21 @@ export interface BilanPDFProps {
 }
 
 export function BilanPDF({ bilan, cabinet, calculations }: BilanPDFProps) {
+  const nomClient = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
   return (
     <Document
-      title={`Bilan Patrimonial - ${bilan.identite.prenom} ${bilan.identite.nom}`}
+      title={`Bilan Patrimonial — ${nomClient}`}
       author={cabinet.nomCabinet || 'Charlie'}
       creator="Charlie Bilan Patrimonial"
       language="fr"
     >
       <CoverPage bilan={bilan} cabinet={cabinet} />
-      <IdentitePage bilan={bilan} cabinet={cabinet} />
-      <BilanActifPage bilan={bilan} calc={calculations} cabinet={cabinet} />
+      <SynthesePage bilan={bilan} calc={calculations} cabinet={cabinet} />
+      <InventairePage bilan={bilan} calc={calculations} cabinet={cabinet} />
       <RevenusPage bilan={bilan} calc={calculations} cabinet={cabinet} />
       <FiscalitePage bilan={bilan} calc={calculations} cabinet={cabinet} />
       <ProfilObjectifsPage bilan={bilan} cabinet={cabinet} />
-      <RecommandationsPage bilan={bilan} cabinet={cabinet} />
+      <MentionsPage bilan={bilan} cabinet={cabinet} />
     </Document>
   )
 }

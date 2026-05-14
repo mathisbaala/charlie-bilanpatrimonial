@@ -6,7 +6,8 @@ const TYPES_LOCATIFS = ['locatif_nu', 'locatif_meuble', 'lmnp', 'scpi'] as const
 export function calculateBilan(data: BilanData): BilanCalculations {
   // Total actif
   const totalActifImmobilier = data.actif.immobilier.reduce((sum, b) => sum + (b.valeurEstimee || 0), 0)
-  const totalActifFinancier = data.actif.financier.reduce((sum, a) => sum + (a.valeur || 0), 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalActifFinancier = data.actif.financier.reduce((sum, a) => sum + (a.valeur || (a as any).valeurRachat || 0), 0)
   const totalActifProfessionnel = data.actif.professionnel.reduce((sum, a) => sum + (a.valeurEstimee || 0), 0)
   const totalActif = totalActifImmobilier + totalActifFinancier + totalActifProfessionnel
 
