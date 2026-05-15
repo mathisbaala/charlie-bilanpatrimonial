@@ -42,7 +42,7 @@ function WelcomeBanner() {
             <p className="text-xs text-ink-400">Patrimoine net</p>
             <p
               className="text-sm font-semibold"
-              style={{ color: calculations.patrimoineNet >= 0 ? '#1E7A4F' : '#952033' }}
+              style={{ color: calculations.patrimoineNet >= 0 ? '#1F4535' : '#B91C1C' }}
             >
               {new Intl.NumberFormat('fr-FR', {
                 style: 'currency',
