@@ -13,6 +13,8 @@ import { ProfilRisqueSection } from '@/components/sections/ProfilRisqueSection'
 import { ObjectifsSection } from '@/components/sections/ObjectifsSection'
 import { CabinetModal } from '@/components/layout/CabinetModal'
 import { ImportModal } from '@/components/layout/ImportModal'
+import { CharlieParcoursHeader } from '@/components/CharlieParcoursHeader'
+import { ContinueToScreenerButton } from '@/components/ContinueToScreenerButton'
 
 function WelcomeBanner() {
   const { bilan, calculations } = useBilan()
@@ -26,13 +28,15 @@ function WelcomeBanner() {
 
   if (!clientName) return null
 
+  const canContinue = !!bilan.profilRisque.resultat
+
   return (
-    <div className="mb-6 p-4 bg-surface-1 rounded-xl border border-ink-100 flex items-center justify-between">
+    <div className="mb-6 p-4 bg-surface-1 rounded-xl border border-ink-100 flex items-center justify-between gap-4">
       <div>
         <p className="text-xs text-ink-400 mb-0.5">Client en cours</p>
         <p className="font-serif text-lg text-ink-950">{clientName}</p>
       </div>
-      <div className="flex gap-6">
+      <div className="flex gap-6 items-center">
         {calculations.totalActif > 0 && (
           <div className="text-right">
             <p className="text-xs text-ink-400">Patrimoine net</p>
@@ -56,6 +60,7 @@ function WelcomeBanner() {
             </p>
           </div>
         )}
+        {canContinue && <ContinueToScreenerButton />}
       </div>
     </div>
   )
@@ -79,6 +84,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-surface-0">
+      <CharlieParcoursHeader />
       <Sidebar onOpenCabinet={() => setCabinetOpen(true)} onOpenImport={() => setImportOpen(true)} />
       <main className="ml-64 p-8 min-h-screen">
         <div className="max-w-4xl mx-auto">
