@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/Card'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Target } from 'lucide-react'
 import type { PrioriteObjectif, DelaiCible } from '@/lib/types'
+import { ContinueToScreenerButton } from '@/components/ContinueToScreenerButton'
+import { bilanIsReadyForScreener } from '@/lib/dossier-mapping'
 
 const DELAI_OPTIONS: { value: DelaiCible | ''; label: string }[] = [
   { value: '', label: '—' },
@@ -188,6 +190,33 @@ export function ObjectifsSection() {
           />
         </div>
       </Card>
+
+      <NextStepCard />
+    </div>
+  )
+}
+
+// CTA de fin de parcours : une fois le bilan complet, le conseiller passe
+// au screener pour sélectionner les fonds adaptés au profil du client.
+function NextStepCard() {
+  const { bilan } = useBilan()
+  const readiness = bilanIsReadyForScreener(bilan)
+
+  return (
+    <div className="rounded-xl border border-navy-200 bg-navy-50/60 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <p className="text-sm font-semibold text-ink-900">
+          Étape suivante — Sélection des fonds
+        </p>
+        <p className="mt-0.5 text-xs text-ink-500 max-w-md">
+          {readiness.ready
+            ? 'Le bilan est complet. Transmettez le profil au Screener pour construire une sélection de fonds adaptée.'
+            : `Complétez d'abord : ${readiness.missing.join(', ')}.`}
+        </p>
+      </div>
+      <div className="flex-shrink-0">
+        <ContinueToScreenerButton />
+      </div>
     </div>
   )
 }
