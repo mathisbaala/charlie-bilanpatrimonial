@@ -11,22 +11,23 @@ const fmtEur = (n: number): string => {
   return (n < 0 ? '-' : '') + s + ' €'
 }
 
-// ─── Palette ──────────────────────────────────────────────────────────────────
+// ─── Palette — Système Charlie unifié (voir DESIGN.md) ─────────────────────────
 const C = {
-  PARCHMENT:   '#EEECEA',   // fond de page — crème chaud
-  PANEL:       '#E4E0D8',   // cartes KPI, callouts
-  INK:         '#1C1914',   // texte principal
-  INK_MED:     '#4E4A44',   // texte secondaire
-  INK_LIGHT:   '#928E88',   // captions, labels
-  GOLD:        '#B59048',   // accent or
-  FOREST:      '#1E3A2F',   // vert foncé — premier graphique
-  FOREST_2:    '#3A6B50',   // vert moyen
-  SAND:        '#C4B89A',   // sable — troisième catégorie
-  PEBBLE:      '#9A9488',   // galets — quatrième
-  BORDER:      '#D2CEC6',   // séparateurs hairline
-  BORDER_DARK: '#9A9690',   // règle principale
-  POS:         '#1A6040',   // positif
-  NEG:         '#A83030',   // négatif / rouge
+  PARCHMENT:   '#FAF6EF',   // fond de page — crème chaud
+  PANEL:       '#F5EFE6',   // cartes KPI, callouts
+  INK:         '#1A1410',   // texte principal
+  INK_MED:     '#5C4E42',   // texte secondaire
+  INK_LIGHT:   '#9A8B7C',   // captions, labels
+  GOLD:        '#9C7A4E',   // accent or / sable
+  NAVY:        '#0F2844',   // navy structurel
+  FOREST:      '#1F4535',   // vert institutionnel
+  FOREST_2:    '#2A5A45',   // vert moyen
+  SAND:        '#C9B79A',   // sable clair — catégorie data-viz
+  PEBBLE:      '#9A8B7C',   // galets — catégorie data-viz
+  BORDER:      '#E8DDD0',   // séparateurs hairline
+  BORDER_DARK: '#D4C5B0',   // règle principale
+  POS:         '#1F4535',   // positif
+  NEG:         '#B91C1C',   // négatif / rouge
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
