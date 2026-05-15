@@ -163,7 +163,7 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
 
-      <div className="relative w-full max-w-2xl mx-4 rounded-2xl shadow-2xl overflow-hidden" style={{ backgroundColor: '#F5F4F0' }}>
+      <div className="relative w-full max-w-2xl mx-4 rounded-2xl shadow-2xl overflow-hidden" style={{ backgroundColor: '#FAF6EF' }}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid #E0DED7' }}>
@@ -201,13 +201,13 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
                 onClick={() => fileInputRef.current?.click()}
                 className="cursor-pointer rounded-xl border-2 border-dashed transition-all p-8 text-center select-none"
                 style={{
-                  borderColor: dragOver ? '#A8874A' : '#D0CCC4',
+                  borderColor: dragOver ? '#9C7A4E' : '#D4C5B0',
                   backgroundColor: dragOver ? '#FBF7EE' : '#FAFAF8',
                 }}
               >
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F0E8D0' }}>
-                    <Upload size={20} style={{ color: '#A8874A' }} />
+                    <Upload size={20} style={{ color: '#9C7A4E' }} />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-ink-800">Déposer ou cliquer pour choisir un fichier</p>
@@ -237,14 +237,14 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
                   rows={5}
                   className="w-full rounded-xl border px-4 py-3 text-sm text-ink-800 resize-none placeholder:text-ink-300 focus:outline-none transition-colors"
                   style={{ borderColor: '#E0DED7', backgroundColor: '#FFFFFF' }}
-                  onFocus={e => (e.currentTarget.style.borderColor = '#A8874A')}
+                  onFocus={e => (e.currentTarget.style.borderColor = '#9C7A4E')}
                   onBlur={e => (e.currentTarget.style.borderColor = '#E0DED7')}
                 />
                 <button
                   disabled={pastedText.trim().length < 10}
                   onClick={() => processInput(undefined, pastedText)}
                   className="mt-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: '#A8874A', color: '#FFFFFF' }}
+                  style={{ backgroundColor: '#9C7A4E', color: '#FFFFFF' }}
                 >
                   Analyser le texte
                 </button>
@@ -255,7 +255,7 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
           {/* ── Loading ── */}
           {step === 'loading' && (
             <div className="flex flex-col items-center justify-center py-12 gap-4">
-              <Loader2 size={32} className="animate-spin" style={{ color: '#A8874A' }} />
+              <Loader2 size={32} className="animate-spin" style={{ color: '#9C7A4E' }} />
               <p className="text-sm text-ink-600">Extraction des informations en cours…</p>
             </div>
           )}
@@ -266,11 +266,11 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
               {/* Legend */}
               <div className="flex items-center gap-4 text-xs text-ink-400 pb-2">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#269163' }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2A5A45' }} />
                   <span>Haute confiance</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#A8874A' }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#9C7A4E' }} />
                   <span>Confiance moyenne — vérifier</span>
                 </div>
               </div>
@@ -297,8 +297,8 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
                     <div
                       className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
                       style={{
-                        backgroundColor: hasValue && isSelected ? '#A8874A' : 'transparent',
-                        border: `1.5px solid ${hasValue && isSelected ? '#A8874A' : '#C8C4BC'}`,
+                        backgroundColor: hasValue && isSelected ? '#9C7A4E' : 'transparent',
+                        border: `1.5px solid ${hasValue && isSelected ? '#9C7A4E' : '#D4C5B0'}`,
                       }}
                     >
                       {hasValue && isSelected && (
@@ -316,7 +316,7 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
                     {hasValue && conf && (
                       <div
                         className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: conf === 'high' ? '#269163' : '#A8874A' }}
+                        style={{ backgroundColor: conf === 'high' ? '#2A5A45' : '#9C7A4E' }}
                         title={conf === 'high' ? 'Haute confiance' : 'Vérifier'}
                       />
                     )}
@@ -338,7 +338,7 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
           {step === 'done' && (
             <div className="flex flex-col items-center justify-center py-12 gap-4">
               <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E4F2EC' }}>
-                <CheckCircle size={32} style={{ color: '#269163' }} />
+                <CheckCircle size={32} style={{ color: '#2A5A45' }} />
               </div>
               <div className="text-center">
                 <p className="font-medium text-ink-800">{selectedFields.size} champ{selectedFields.size > 1 ? 's importés' : ' importé'}</p>
@@ -353,11 +353,11 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
           <div className="flex items-center justify-between px-6 py-4" style={{ borderTop: '1px solid #E0DED7' }}>
             {step === 'preview' ? (
               <>
-                <button onClick={reset} className="px-4 py-2 rounded-lg text-sm transition-colors" style={{ color: '#8E8D87' }}>
+                <button onClick={reset} className="px-4 py-2 rounded-lg text-sm transition-colors" style={{ color: '#9A8B7C' }}>
                   ← Recommencer
                 </button>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs" style={{ color: '#8E8D87' }}>{selectedFields.size} champ{selectedFields.size > 1 ? 's' : ''} sélectionné{selectedFields.size > 1 ? 's' : ''}</span>
+                  <span className="text-xs" style={{ color: '#9A8B7C' }}>{selectedFields.size} champ{selectedFields.size > 1 ? 's' : ''} sélectionné{selectedFields.size > 1 ? 's' : ''}</span>
                   <button
                     onClick={applyImport}
                     disabled={selectedFields.size === 0}

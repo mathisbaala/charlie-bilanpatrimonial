@@ -74,7 +74,7 @@ export function PDFButtonInner() {
         <button
           onClick={handleButtonClick}
           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-white hover:opacity-90 shadow-sm"
-          style={{ backgroundColor: '#A8874A' }}
+          style={{ backgroundColor: '#9C7A4E' }}
         >
           <FileText size={14} />
           <span>Télécharger le PDF</span>
@@ -99,7 +99,7 @@ export function PDFButtonInner() {
                   ? 'bg-white/10 text-white/50 cursor-wait'
                   : 'text-white hover:opacity-90 shadow-sm'
               }`}
-              style={loading ? {} : { backgroundColor: '#A8874A' }}
+              style={loading ? {} : { backgroundColor: '#9C7A4E' }}
               disabled={loading}
             >
               {loading ? (

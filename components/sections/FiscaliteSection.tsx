@@ -62,13 +62,13 @@ export function FiscaliteSection() {
       <div className="mb-4 p-4 rounded-xl flex items-center justify-between" style={{ backgroundColor: '#F0E8D0', border: '1px solid #D4B87A' }}>
         <div>
           <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#7A6035' }}>Tranche Marginale d&apos;Imposition</p>
-          <p className="text-2xl font-serif" style={{ color: '#A8874A' }}>{calculations.tmi} %</p>
+          <p className="text-2xl font-serif" style={{ color: '#9C7A4E' }}>{calculations.tmi} %</p>
           <p className="text-xs" style={{ color: '#7A6035' }}>{TMI_DESCRIPTIONS[calculations.tmi] || ''}</p>
         </div>
         {calculations.isAssujettisIFI && (
           <div className="text-right">
             <p className="text-xs text-neg-600 uppercase tracking-wide mb-1">IFI estimé</p>
-            <p className="text-xl font-semibold" style={{ color: '#952033' }}>{formatEuros(calculations.estimationIFI)}</p>
+            <p className="text-xl font-semibold" style={{ color: '#B91C1C' }}>{formatEuros(calculations.estimationIFI)}</p>
             <p className="text-xs text-ink-400">Assujetti IFI</p>
           </div>
         )}

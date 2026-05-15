@@ -1,65 +1,69 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ─── Suite Charlie — Design System unifié (voir DESIGN.md) ─────────────────
+   Chaleur institutionnelle : crème chaud, encre chaude, accent or/sable,
+   navy structurel. Valeurs identiques au Screener et à la Proposition. */
 @theme {
-  /* Surface colors */
-  --color-surface-0: #F5F4F0;
-  --color-surface-1: #FFFFFF;
-  --color-surface-2: #EFEDE8;
-  --color-surface-3: #E8E6E0;
+  /* Surfaces */
+  --color-surface-0: #FAF6EF;   /* fond de page (crème chaud) */
+  --color-surface-1: #FFFFFF;   /* cartes, panneaux */
+  --color-surface-2: #F5EFE6;   /* surfaces secondaires */
+  --color-surface-3: #E8DDD0;   /* bordures appuyées */
 
-  /* Ink colors */
-  --color-ink-950: #0A0A09;
-  --color-ink-800: #242420;
-  --color-ink-600: #55554F;
-  --color-ink-400: #8E8D87;
-  --color-ink-200: #C9C7BF;
-  --color-ink-100: #E0DED7;
-  --color-ink-50: #ECEAE4;
+  /* Ink — encre chaude */
+  --color-ink-950: #1A1410;
+  --color-ink-800: #3A2F26;
+  --color-ink-600: #7A6B5E;
+  --color-ink-400: #9A8B7C;
+  --color-ink-200: #D4C5B0;
+  --color-ink-100: #E8DDD0;
+  --color-ink-50:  #F5EFE6;
 
-  /* Navy colors */
-  --color-navy-950: #040E1C;
-  --color-navy-900: #081828;
-  --color-navy-800: #0F2844;
-  --color-navy-700: #163A5E;
-  --color-navy-600: #1E4D7A;
-  --color-navy-500: #275F94;
+  /* Navy — couleur structurelle (sidebar, en-têtes, data viz) */
+  --color-navy-950: #081828;
+  --color-navy-900: #0F2844;
+  --color-navy-800: #163A5E;
+  --color-navy-700: #1E4D7A;
+  --color-navy-600: #275F94;
   --color-navy-200: #A8C4DE;
   --color-navy-100: #D4E2EF;
-  --color-navy-50: #EEF4FA;
+  --color-navy-50:  #EEF4FA;
 
-  /* Gold colors */
-  --color-gold-600: #8C6F34;
-  --color-gold-500: #A8874A;
-  --color-gold-400: #C09F65;
-  --color-gold-100: #F2E8D4;
-  --color-gold-50: #FAF4E8;
+  /* Gold / Sable — accent de marque */
+  --color-gold-600: #7D6140;   /* sand-hover */
+  --color-gold-500: #9C7A4E;   /* sand — accent principal */
+  --color-gold-400: #B89B6E;
+  --color-gold-100: #F5EFE6;   /* sand-faint */
+  --color-gold-50:  #FAF6EF;
 
-  /* Positive colors */
-  --color-pos-800: #0C3B26;
-  --color-pos-700: #175C3C;
-  --color-pos-600: #1E7A4F;
-  --color-pos-500: #269163;
-  --color-pos-100: #E4F2EC;
-  --color-pos-50: #F1F9F5;
+  /* Positif — vert institutionnel */
+  --color-pos-800: #0C2A1F;
+  --color-pos-700: #163528;
+  --color-pos-600: #1F4535;
+  --color-pos-500: #2A5A45;
+  --color-pos-100: #E8F0EC;
+  --color-pos-50:  #F1F7F4;
 
-  /* Negative colors */
-  --color-neg-800: #4D0E17;
-  --color-neg-700: #731623;
-  --color-neg-600: #952033;
-  --color-neg-500: #B52D42;
-  --color-neg-100: #F4E6E9;
-  --color-neg-50: #FAF2F3;
+  /* Négatif — rouge */
+  --color-neg-800: #5A0F0F;
+  --color-neg-700: #8A1414;
+  --color-neg-600: #B91C1C;
+  --color-neg-500: #D03333;
+  --color-neg-100: #FEE8E8;
+  --color-neg-50:  #FCF3F3;
 
-  /* Font families */
-  --font-serif: "DM Serif Display", Georgia, serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Familles de polices — chargées via next/font dans app/layout.tsx */
+  --font-serif: var(--font-instrument-serif), Georgia, serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
 body {
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  background-color: #F5F4F0;
-  color: #242420;
+  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  background-color: #FAF6EF;
+  color: #1A1410;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @keyframes fadeIn {

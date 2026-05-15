@@ -18,9 +18,9 @@ const DELAI_OPTIONS: { value: DelaiCible | ''; label: string }[] = [
 ]
 
 const PRIORITE_OPTIONS: { value: PrioriteObjectif; label: string; color: string }[] = [
-  { value: 'haute', label: 'Haute', color: '#952033' },
-  { value: 'moyenne', label: 'Moyenne', color: '#A8874A' },
-  { value: 'basse', label: 'Basse', color: '#8E8D87' },
+  { value: 'haute', label: 'Haute', color: '#B91C1C' },
+  { value: 'moyenne', label: 'Moyenne', color: '#9C7A4E' },
+  { value: 'basse', label: 'Basse', color: '#9A8B7C' },
 ]
 
 export function ObjectifsSection() {

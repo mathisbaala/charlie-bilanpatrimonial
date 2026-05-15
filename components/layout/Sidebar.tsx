@@ -60,7 +60,7 @@ function computeSectionCompletude(sectionId: SectionId, bilan: BilanData): numbe
 
 function ringColor(completude: number): string {
   if (completude === 100) return '#5A9E6F'
-  if (completude >= 50) return '#A8874A'
+  if (completude >= 50) return '#9C7A4E'
   return '#B0A898'
 }
 
@@ -126,7 +126,7 @@ export function Sidebar({
               onClick={() => setActiveSection(section.id)}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-150"
               style={{
-                borderLeft: `2px solid ${isActive ? '#A8874A' : 'transparent'}`,
+                borderLeft: `2px solid ${isActive ? '#9C7A4E' : 'transparent'}`,
                 backgroundColor: isActive ? 'rgba(168,135,74,0.10)' : 'transparent',
                 paddingLeft: isActive ? 14 : 16,
               }}

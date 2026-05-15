@@ -33,13 +33,13 @@ function ChoiceButton({ selected, onClick, label, description }: ChoiceButtonPro
 const PROFIL_DESCRIPTIONS: Record<ProfilRisqueResultat, { label: string; color: string; bg: string; description: string }> = {
   prudent: {
     label: 'Profil Prudent',
-    color: '#1E7A4F',
+    color: '#1F4535',
     bg: '#F1F9F5',
     description: 'Priorité à la sécurité du capital. Tolérance aux pertes très faible. Horizon court terme. Produits de taux et fonds en euros recommandés.'
   },
   equilibre: {
     label: 'Profil Équilibré',
-    color: '#A8874A',
+    color: '#9C7A4E',
     bg: '#FAF4E8',
     description: "Recherche d'un équilibre rendement/risque. Accepte une volatilité modérée. Allocation mixte actions/obligations conseillée."
   },

@@ -38,7 +38,7 @@ export function RevenusSection() {
         </div>
         <div className="bg-white rounded-xl p-4" style={{ border: '1px solid #E8E4DC' }}>
           <p className="text-xs text-ink-500 uppercase tracking-wide mb-2">Capacité d&apos;épargne</p>
-          <p className="font-serif text-xl" style={{ color: calculations.capaciteEpargneMensuelle >= 0 ? '#1E7A4F' : '#952033' }}>
+          <p className="font-serif text-xl" style={{ color: calculations.capaciteEpargneMensuelle >= 0 ? '#1F4535' : '#B91C1C' }}>
             {formatEuros(calculations.capaciteEpargneMensuelle)}
           </p>
         </div>
@@ -104,7 +104,7 @@ export function RevenusSection() {
 
             <div className="pt-3 border-t border-ink-100 flex justify-between">
               <span className="text-sm text-ink-600">Total annuel</span>
-              <span className="text-sm font-semibold" style={{ color: '#1E7A4F' }}>
+              <span className="text-sm font-semibold" style={{ color: '#1F4535' }}>
                 {formatEuros(calculations.revenusMensuelsTotaux * 12)}
               </span>
             </div>
@@ -123,7 +123,7 @@ export function RevenusSection() {
             <InputField label="Autres charges fixes" value={charges.autresCharges || ''} onChange={(v) => updateChg({ autresCharges: parseFloat(v) || 0 })} type="number" suffix="€/an" />
             <div className="pt-3 border-t border-ink-100 flex justify-between">
               <span className="text-sm text-ink-600">Total annuel</span>
-              <span className="text-sm font-semibold" style={{ color: '#952033' }}>
+              <span className="text-sm font-semibold" style={{ color: '#B91C1C' }}>
                 {formatEuros(calculations.chargesMensuellesTotales * 12)}
               </span>
             </div>

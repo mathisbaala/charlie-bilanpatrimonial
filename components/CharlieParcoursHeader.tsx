@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { getDossier, loadDossierRef, readDossierParamsFromUrl } from '@/lib/charlie-dossier'
-import type { ParcoursStep } from '@/lib/charlie-dossier'
+import type { ClientSummary, ParcoursStep, ProfilRisqueResultat } from '@/lib/charlie-dossier'
+
+// ─── Bandeau de parcours — composant partagé (voir DESIGN.md) ──────────────
+// Rendu strictement identique dans les 3 apps. Seuls diffèrent : la source de
+// données, le positionnement du wrapper, et l'étape courante.
 
 type Step = { id: ParcoursStep; label: string; index: number }
 
@@ -14,19 +18,21 @@ const STEPS: Step[] = [
 
 const CURRENT_STEP: ParcoursStep = 'bilan'
 
+const PROFIL_LABEL: Record<ProfilRisqueResultat, string> = {
+  prudent: 'Prudent',
+  equilibre: 'Équilibré',
+  dynamique: 'Dynamique',
+  offensif: 'Offensif',
+}
+
+const formatCurrency = (n: number) =>
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
+
 export function CharlieParcoursHeader() {
-  // dossierRef stays null on the server AND on the first client render — this
-  // keeps SSR and client hydration identical (both render `null`). We only
-  // read the browser-only URL/sessionStorage AFTER mount, in the effect below.
-  // Reading `window` in a useState initializer would desync SSR vs client and
-  // throw a hydration mismatch.
   const [dossierRef, setDossierRef] = useState<{ id: string; token: string } | null>(null)
-  const [clientName, setClientName] = useState<string | null>(null)
+  const [summary, setSummary] = useState<ClientSummary | null>(null)
   const [stepsCompleted, setStepsCompleted] = useState<ParcoursStep[]>([])
 
-  // Read the dossier ref once, post-mount (client-only, hydration-safe).
-  // setState-in-effect is correct here: the URL is an external system we sync
-  // from after hydration. Reading it during render would break SSR.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDossierRef(readDossierParamsFromUrl() ?? loadDossierRef())
@@ -38,14 +44,11 @@ export function CharlieParcoursHeader() {
     void getDossier(dossierRef.id, dossierRef.token, { signal: controller.signal })
       .then((env) => {
         if (controller.signal.aborted) return
-        const name = env.data.client_summary?.nomComplet
-        if (name) setClientName(name)
+        if (env.data.client_summary) setSummary(env.data.client_summary)
         setStepsCompleted(env.steps_completed || [])
       })
       .catch((err) => {
         if (controller.signal.aborted) return
-        // Surface to the console at least — silently swallowing makes the
-        // missing client name impossible to debug.
         console.warn('[dossier] header hydration failed', err)
       })
     return () => controller.abort()
@@ -54,42 +57,64 @@ export function CharlieParcoursHeader() {
   if (!dossierRef) return null
 
   return (
-    // pl-[17rem] clears the fixed 16rem (256px) Sidebar so the left content
-    // (Charlie + client name) isn't hidden behind it.
-    <div className="border-b border-ink-100 bg-surface-1">
-      <div className="pl-[17rem] pr-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="font-serif text-sm text-ink-700">Charlie</div>
-          {clientName && (
-            <div className="text-xs text-ink-500">
-              Dossier de <span className="font-medium text-ink-800">{clientName}</span>
-            </div>
-          )}
-        </div>
-        <ol className="flex items-center gap-3 text-xs">
-          {STEPS.map((s) => {
-            const done = stepsCompleted.includes(s.id)
-            const active = s.id === CURRENT_STEP
-            return (
-              <li
-                key={s.id}
-                className={[
-                  'flex items-center gap-1.5 px-2.5 py-1 rounded-full border',
-                  active
-                    ? 'border-ink-800 text-ink-950 bg-white'
-                    : done
-                    ? 'border-emerald-300 text-emerald-700 bg-emerald-50'
-                    : 'border-ink-100 text-ink-400 bg-white',
-                ].join(' ')}
-              >
-                <span className="font-semibold">{s.index}</span>
-                <span>{s.label}</span>
-                {done && !active && <span aria-hidden>✓</span>}
-              </li>
-            )
-          })}
-        </ol>
+    // pl-[17rem] dégage la Sidebar fixe de 16rem.
+    <div className="border-b border-[#E8DDD0] bg-[#F5EFE6]">
+      <div className="pl-[17rem] pr-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <ParcoursIdentite summary={summary} />
+        <ParcoursSteps stepsCompleted={stepsCompleted} />
       </div>
     </div>
+  )
+}
+
+// ── Rendu partagé — identique dans les 3 apps ──────────────────────────────
+
+export function ParcoursIdentite({ summary }: { summary: ClientSummary | null }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="font-serif text-sm text-[#1A1410]">Charlie</span>
+      {summary && (
+        <span className="text-[#7A6B5E]">
+          Dossier de <span className="font-medium text-[#1A1410]">{summary.nomComplet}</span>
+          <span className="hidden sm:inline">
+            {' · '}Profil{' '}
+            <strong className="font-semibold text-[#1A1410]">{PROFIL_LABEL[summary.profilRisque]}</strong>
+            {' · '}Horizon{' '}
+            <strong className="font-semibold text-[#1A1410]">{summary.horizonAnnees} ans</strong>
+            {' · '}
+            <strong className="font-semibold text-[#1A1410]">{formatCurrency(summary.montantAInvestir)}</strong>
+            {' à investir'}
+          </span>
+        </span>
+      )}
+    </div>
+  )
+}
+
+export function ParcoursSteps({ stepsCompleted }: { stepsCompleted: ParcoursStep[] }) {
+  return (
+    <ol className="flex items-center gap-1.5">
+      {STEPS.map((s) => {
+        const done = stepsCompleted.includes(s.id)
+        const active = s.id === CURRENT_STEP
+        return (
+          <li
+            key={s.id}
+            className={[
+              'flex items-center gap-1 px-2.5 py-1 rounded-full border',
+              active
+                ? 'border-[#1A1410] text-[#1A1410] bg-white'
+                : done
+                ? 'border-[#BBD0C5] text-[#1F4535] bg-[#E8F0EC]'
+                : 'border-[#E8DDD0] text-[#9A8B7C] bg-white',
+            ].join(' ')}
+          >
+            <span className="font-semibold">{s.index}</span>
+            <span>{s.label}</span>
+            {done && !active && <span aria-hidden>✓</span>}
+          </li>
+        )
+      })}
+    </ol>
   )
 }

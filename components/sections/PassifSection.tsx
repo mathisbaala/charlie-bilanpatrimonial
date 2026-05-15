@@ -84,7 +84,7 @@ export function PassifSection() {
       {totalPassif > 0 && (
         <div className="mb-4 px-4 py-3 bg-neg-50 rounded-xl border border-neg-100 flex justify-between items-center">
           <span className="text-sm text-neg-600 font-medium">Total passif</span>
-          <span className="text-lg font-semibold" style={{ color: '#952033' }}>{formatEuros(totalPassif)}</span>
+          <span className="text-lg font-semibold" style={{ color: '#B91C1C' }}>{formatEuros(totalPassif)}</span>
         </div>
       )}
 
