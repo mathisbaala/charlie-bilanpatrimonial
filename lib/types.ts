@@ -70,6 +70,7 @@ export interface BienImmobilier {
   id: string
   type: TypeBienImmobilier
   libelle: string
+  adresse?: string                     // localisation du bien (optionnel)
   valeurEstimee: number
   prixAcquisition: number              // pour plus-value latente
   dateAcquisition: string
@@ -109,6 +110,7 @@ export interface ActifFinancier {
 export interface ActifProfessionnel {
   id: string
   libelle: string
+  type?: string                        // nature de l'actif pro (parts, fonds de commerce…)
   denomination?: string
   pourcentageDetention?: number
   valeurEstimee: number
@@ -242,6 +244,7 @@ export interface ParametresCabinet {
   nomCabinet: string
   nomConseiller: string
   prenomConseiller: string
+  fonction?: string                    // titre du conseiller (ex: CGP)
   numeroOrias: string
   adresse: string
   telephone: string
