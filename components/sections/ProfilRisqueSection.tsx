@@ -40,7 +40,7 @@ const PROFIL_DESCRIPTIONS: Record<ProfilRisqueResultat, { label: string; color: 
   equilibre: {
     label: 'Profil Équilibré',
     color: '#9C7A4E',
-    bg: '#FAF4E8',
+    bg: '#F5EFE6',
     description: "Recherche d'un équilibre rendement/risque. Accepte une volatilité modérée. Allocation mixte actions/obligations conseillée."
   },
   dynamique: {
@@ -52,7 +52,7 @@ const PROFIL_DESCRIPTIONS: Record<ProfilRisqueResultat, { label: string; color: 
   offensif: {
     label: 'Profil Offensif',
     color: '#081828',
-    bg: '#E8E6E0',
+    bg: '#E8DDD0',
     description: 'Recherche de performance maximale. Accepte des pertes importantes. Exposition élevée aux marchés actions et actifs alternatifs.'
   },
 }
