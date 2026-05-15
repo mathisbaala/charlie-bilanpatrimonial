@@ -92,13 +92,13 @@ export function PassifSection() {
         {passif.credits.map((credit) => (
           <Card key={credit.id} padding="sm">
             <div className="flex items-start justify-between mb-3">
-              <button onClick={() => setExpandedId(expandedId === credit.id ? null : credit.id)} className="flex-1 text-left">
+              <button type="button" aria-expanded={expandedId === credit.id} onClick={() => setExpandedId(expandedId === credit.id ? null : credit.id)} className="flex-1 text-left">
                 <p className="font-medium text-ink-800 text-sm">{credit.libelle || TYPE_CREDIT_OPTIONS.find(o => o.value === credit.type)?.label || 'Nouveau crédit'}</p>
                 <p className="text-xs text-ink-400">
                   {credit.etablissement || '—'} · Capital restant : {formatEuros(credit.capitalRestantDu)} · {credit.mensualite > 0 ? `${formatEuros(credit.mensualite)}/mois` : ''}
                 </p>
               </button>
-              <button onClick={() => removeCredit(credit.id)} className="ml-2 p-1.5 text-ink-400 hover:text-neg-600 hover:bg-neg-50 rounded transition-colors">
+              <button type="button" aria-label="Supprimer ce crédit" onClick={() => removeCredit(credit.id)} className="ml-2 p-1.5 text-ink-400 hover:text-neg-600 hover:bg-neg-50 rounded transition-colors">
                 <Trash2 size={14} />
               </button>
             </div>

@@ -17,6 +17,8 @@ interface ChoiceButtonProps {
 function ChoiceButton({ selected, onClick, label, description }: ChoiceButtonProps) {
   return (
     <button
+      type="button"
+      aria-pressed={selected}
       onClick={onClick}
       className={`w-full text-left px-4 py-3.5 rounded-xl border-2 transition-all duration-150 ${
         selected

@@ -24,6 +24,16 @@ const LIEN_LABELS: Record<Heritier['lien'], string> = {
   autre: 'Autre',
 }
 
+// Abattements de droit commun sur les droits de succession (art. 779 CGI).
+// Servent de valeur par défaut : si le CGP change le lien sans avoir
+// personnalisé le montant, l'abattement s'aligne automatiquement.
+const ABATTEMENT_DEFAUT: Record<Heritier['lien'], number> = {
+  conjoint: 0,
+  enfant: 100000,
+  petit_enfant: 31865,
+  autre: 1594,
+}
+
 export function FiscaliteSection() {
   const { bilan, calculations, updateFiscalite } = useBilan()
   const { fiscalite } = bilan
@@ -186,7 +196,16 @@ export function FiscaliteSection() {
                       <label className="block text-xs font-medium text-ink-600 mb-1">Lien de parenté</label>
                       <select
                         value={h.lien}
-                        onChange={(e) => updateHeritier(h.id, { lien: e.target.value as Heritier['lien'] })}
+                        onChange={(e) => {
+                          const newLien = e.target.value as Heritier['lien']
+                          const patch: Partial<Heritier> = { lien: newLien }
+                          // N'écrase le montant que s'il est resté sur la
+                          // valeur par défaut de l'ancien lien (non personnalisé).
+                          if (h.abattementRestant === ABATTEMENT_DEFAUT[h.lien]) {
+                            patch.abattementRestant = ABATTEMENT_DEFAUT[newLien]
+                          }
+                          updateHeritier(h.id, patch)
+                        }}
                         className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-800 focus:outline-none focus:ring-2 focus:ring-navy/30 focus:border-navy"
                       >
                         {(Object.keys(LIEN_LABELS) as Heritier['lien'][]).map((lien) => (

@@ -59,13 +59,20 @@ export function FamilialeSection() {
   const showConjoint = ['marie', 'pacse', 'concubinage'].includes(situationFamiliale.statutMarital)
 
   // --- Enfants ---
+  // Source de vérité unique : `nombreEnfants` reflète toujours `enfants.length`.
+  // Le compteur, le bouton « Ajouter » et la croix de suppression maintiennent
+  // tous les trois cette égalité — pas de divergence possible entre le nombre
+  // affiché et les fiches réellement saisies.
+  const newEnfant = (): Enfant => ({ id: crypto.randomUUID(), prenom: '', age: 0, aCharge: true, lienParente: '' })
+
   const addEnfant = () => {
-    const newEnfant: Enfant = { id: crypto.randomUUID(), prenom: '', age: 0, aCharge: true, lienParente: '' }
-    updateFamiliale({ enfants: [...situationFamiliale.enfants, newEnfant] })
+    const enfants = [...situationFamiliale.enfants, newEnfant()]
+    updateFamiliale({ enfants, nombreEnfants: enfants.length })
   }
 
   const removeEnfant = (id: string) => {
-    updateFamiliale({ enfants: situationFamiliale.enfants.filter(e => e.id !== id) })
+    const enfants = situationFamiliale.enfants.filter(e => e.id !== id)
+    updateFamiliale({ enfants, nombreEnfants: enfants.length })
   }
 
   const updateEnfant = (id: string, patch: Partial<Enfant>) => {
@@ -74,8 +81,18 @@ export function FamilialeSection() {
     })
   }
 
+  // Le compteur pilote directement les fiches enfant : augmenter ajoute des
+  // fiches, diminuer retire les dernières. Le CGP garde ainsi un moyen rapide
+  // de fixer la composition du foyer sans détailler chaque enfant.
   const setNombreEnfants = (n: number) => {
-    updateFamiliale({ nombreEnfants: n })
+    const current = situationFamiliale.enfants
+    let enfants = current
+    if (n > current.length) {
+      enfants = [...current, ...Array.from({ length: n - current.length }, newEnfant)]
+    } else if (n < current.length) {
+      enfants = current.slice(0, n)
+    }
+    updateFamiliale({ nombreEnfants: n, enfants })
   }
 
   // --- Conjoint ---
@@ -206,6 +223,8 @@ export function FamilialeSection() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-ink-500">Enfant {i + 1}</span>
                     <button
+                      type="button"
+                      aria-label={`Supprimer l'enfant ${i + 1}`}
                       onClick={() => removeEnfant(enfant.id)}
                       className="w-6 h-6 rounded flex items-center justify-center text-ink-400 hover:text-neg-600 hover:bg-neg-50 transition-colors"
                     >
@@ -224,7 +243,8 @@ export function FamilialeSection() {
                       <div className="flex items-center gap-2">
                         <input
                           type="number"
-                          value={enfant.age}
+                          value={enfant.age || ''}
+                          placeholder="Âge"
                           onChange={(e) => updateEnfant(enfant.id, { age: parseInt(e.target.value) || 0 })}
                           className="w-full h-10 rounded-lg border border-ink-100 bg-surface-1 text-ink-800 text-sm px-3 focus:outline-none focus:border-navy-600 focus:ring-2 focus:ring-navy-50"
                           min={0}
@@ -311,6 +331,8 @@ export function FamilialeSection() {
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-ink-500">Donation {i + 1}</span>
                       <button
+                        type="button"
+                        aria-label={`Supprimer la donation ${i + 1}`}
                         onClick={() => removeDonation(donation.id)}
                         className="w-6 h-6 rounded flex items-center justify-center text-ink-400 hover:text-neg-600 hover:bg-neg-50 transition-colors"
                       >
@@ -333,7 +355,7 @@ export function FamilialeSection() {
                       <InputField
                         label="Montant (€)"
                         type="number"
-                        value={donation.montant}
+                        value={donation.montant || ''}
                         onChange={(v) => updateDonation(donation.id, { montant: parseFloat(v) || 0 })}
                         suffix="€"
                         min={0}

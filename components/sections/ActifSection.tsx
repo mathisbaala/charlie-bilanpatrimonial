@@ -161,6 +161,8 @@ export function ActifSection() {
         {tabs.map(tab => (
           <button
             key={tab.id}
+            type="button"
+            aria-pressed={activeTab === tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-150 ${
               activeTab === tab.id
@@ -194,13 +196,15 @@ export function ActifSection() {
               <Card key={bien.id} padding="sm">
                 <div className="flex items-start justify-between mb-3">
                   <button
+                    type="button"
+                    aria-expanded={expandedId === bien.id}
                     onClick={() => setExpandedId(expandedId === bien.id ? null : bien.id)}
                     className="flex-1 text-left"
                   >
                     <p className="font-medium text-ink-800 text-sm">{bien.libelle || 'Nouveau bien'}</p>
                     <p className="text-xs text-ink-400">{BIEN_IMMO_OPTIONS.find(o => o.value === bien.type)?.label} · {formatEuros(bien.valeurEstimee)}</p>
                   </button>
-                  <button onClick={() => removeImmo(bien.id)} className="ml-2 p-1.5 text-ink-400 hover:text-neg-600 hover:bg-neg-50 rounded transition-colors">
+                  <button type="button" aria-label="Supprimer ce bien immobilier" onClick={() => removeImmo(bien.id)} className="ml-2 p-1.5 text-ink-400 hover:text-neg-600 hover:bg-neg-50 rounded transition-colors">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -314,11 +318,11 @@ export function ActifSection() {
           {actif.financier.map((fin) => (
             <Card key={fin.id} padding="sm">
               <div className="flex items-start justify-between mb-3">
-                <button onClick={() => setExpandedId(expandedId === fin.id ? null : fin.id)} className="flex-1 text-left">
+                <button type="button" aria-expanded={expandedId === fin.id} onClick={() => setExpandedId(expandedId === fin.id ? null : fin.id)} className="flex-1 text-left">
                   <p className="font-medium text-ink-800 text-sm">{fin.libelle || ACTIF_FIN_OPTIONS.find(o => o.value === fin.type)?.label || 'Nouveau placement'}</p>
                   <p className="text-xs text-ink-400">{fin.etablissement || '—'} · {formatEuros(fin.valeur)}</p>
                 </button>
-                <button onClick={() => removeFin(fin.id)} className="ml-2 p-1.5 text-ink-400 hover:text-neg-600 hover:bg-neg-50 rounded transition-colors">
+                <button type="button" aria-label="Supprimer ce placement financier" onClick={() => removeFin(fin.id)} className="ml-2 p-1.5 text-ink-400 hover:text-neg-600 hover:bg-neg-50 rounded transition-colors">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -396,11 +400,11 @@ export function ActifSection() {
           {actif.professionnel.map((pro) => (
             <Card key={pro.id} padding="sm">
               <div className="flex items-start justify-between mb-3">
-                <button onClick={() => setExpandedId(expandedId === pro.id ? null : pro.id)} className="flex-1 text-left">
+                <button type="button" aria-expanded={expandedId === pro.id} onClick={() => setExpandedId(expandedId === pro.id ? null : pro.id)} className="flex-1 text-left">
                   <p className="font-medium text-ink-800 text-sm">{pro.libelle || 'Nouvel actif professionnel'}</p>
                   <p className="text-xs text-ink-400">{pro.denomination || '—'} · {formatEuros(pro.valeurEstimee)}</p>
                 </button>
-                <button onClick={() => removePro(pro.id)} className="ml-2 p-1.5 text-ink-400 hover:text-neg-600 hover:bg-neg-50 rounded transition-colors">
+                <button type="button" aria-label="Supprimer cet actif professionnel" onClick={() => removePro(pro.id)} className="ml-2 p-1.5 text-ink-400 hover:text-neg-600 hover:bg-neg-50 rounded transition-colors">
                   <Trash2 size={14} />
                 </button>
               </div>

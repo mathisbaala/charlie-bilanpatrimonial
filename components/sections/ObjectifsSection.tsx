@@ -83,6 +83,10 @@ export function ObjectifsSection() {
           >
             <div className="flex items-center gap-3 p-3">
               <button
+                type="button"
+                role="checkbox"
+                aria-checked={obj.selected}
+                aria-label={obj.libelle}
                 onClick={() => toggleObjectif(obj.id)}
                 className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
                   obj.selected ? 'border-navy-600 bg-navy-600' : 'border-ink-200'
@@ -102,6 +106,9 @@ export function ObjectifsSection() {
                   {PRIORITE_OPTIONS.map((p) => (
                     <button
                       key={p.value}
+                      type="button"
+                      aria-pressed={obj.priorite === p.value}
+                      aria-label={`Priorité ${p.label}`}
                       onClick={() => setPriorite(obj.id, p.value)}
                       className={`px-2 py-0.5 rounded text-xs font-medium transition-all ${
                         obj.priorite === p.value ? 'text-white' : 'text-ink-400 hover:text-ink-600'
@@ -148,6 +155,10 @@ export function ObjectifsSection() {
       <Card className="mb-4">
         <div className="flex items-start gap-3">
           <button
+            type="button"
+            role="checkbox"
+            aria-checked={bilan.objectifs.preferencesESG}
+            aria-label="Sensibilité ESG / Investissement responsable (ISR)"
             onClick={() => updateObjectifs({ preferencesESG: !bilan.objectifs.preferencesESG })}
             className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
               bilan.objectifs.preferencesESG ? 'border-navy-600 bg-navy-600' : 'border-ink-200'
