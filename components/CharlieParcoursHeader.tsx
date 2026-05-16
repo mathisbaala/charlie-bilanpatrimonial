@@ -62,7 +62,8 @@ export function CharlieParcoursHeader() {
 export function ParcoursIdentite({ summary }: { summary: ClientSummary | null }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="font-serif text-sm text-[#1A1410]">Charlie</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/charlie-favicon.png" alt="Charlie" className="h-[18px] w-[18px] object-contain" />
       {summary && (
         <span className="text-[#7A6B5E]">
           Dossier de <span className="font-medium text-[#1A1410]">{summary.nomComplet}</span>
