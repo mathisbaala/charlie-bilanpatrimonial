@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getDossier, loadDossierRef, readDossierParamsFromUrl } from '@/lib/charlie-dossier'
-import type { ClientSummary, ParcoursStep, ProfilRisqueResultat } from '@/lib/charlie-dossier'
+import type { ClientSummary, ParcoursStep } from '@/lib/charlie-dossier'
 
 // ─── Bandeau de parcours — composant partagé (voir DESIGN.md) ──────────────
 // Rendu strictement identique dans les 3 apps. Seuls diffèrent : la source de
@@ -17,16 +17,6 @@ const STEPS: Step[] = [
 ]
 
 const CURRENT_STEP: ParcoursStep = 'bilan'
-
-const PROFIL_LABEL: Record<ProfilRisqueResultat, string> = {
-  prudent: 'Prudent',
-  equilibre: 'Équilibré',
-  dynamique: 'Dynamique',
-  offensif: 'Offensif',
-}
-
-const formatCurrency = (n: number) =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
 
 export function CharlieParcoursHeader() {
   const [dossierRef, setDossierRef] = useState<{ id: string; token: string } | null>(null)
@@ -76,15 +66,6 @@ export function ParcoursIdentite({ summary }: { summary: ClientSummary | null })
       {summary && (
         <span className="text-[#7A6B5E]">
           Dossier de <span className="font-medium text-[#1A1410]">{summary.nomComplet}</span>
-          <span className="hidden sm:inline">
-            {' · '}Profil{' '}
-            <strong className="font-semibold text-[#1A1410]">{PROFIL_LABEL[summary.profilRisque]}</strong>
-            {' · '}Horizon{' '}
-            <strong className="font-semibold text-[#1A1410]">{summary.horizonAnnees} ans</strong>
-            {' · '}
-            <strong className="font-semibold text-[#1A1410]">{formatCurrency(summary.montantAInvestir)}</strong>
-            {' à investir'}
-          </span>
         </span>
       )}
     </div>
