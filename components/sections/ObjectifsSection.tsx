@@ -225,7 +225,7 @@ function NextStepCard() {
   return (
     <div className="mt-4 rounded-2xl border border-gold-400/40 bg-gold-100/50 px-7 py-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
       <div className="max-w-md">
-        <p className="font-serif text-2xl leading-snug tracking-tight text-ink-950">
+        <p className="text-lg font-semibold tracking-tight text-ink-950">
           {readiness.ready ? `Le profil de ${prenom} est prêt` : 'Plus qu’une étape'}
         </p>
         <p className="mt-2.5 text-sm leading-relaxed text-ink-600">

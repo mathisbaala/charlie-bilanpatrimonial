@@ -34,7 +34,7 @@ function WelcomeBanner() {
     <div className="mb-6 p-4 bg-surface-1 rounded-xl border border-ink-100 flex items-center justify-between gap-4">
       <div>
         <p className="text-xs text-ink-400 mb-0.5">Client en cours</p>
-        <p className="font-serif text-lg text-ink-950">{clientName}</p>
+        <p className="text-lg font-semibold text-ink-950 tracking-tight">{clientName}</p>
       </div>
       <div className="flex gap-6 items-center">
         {calculations.totalActif > 0 && (

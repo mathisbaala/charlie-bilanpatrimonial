@@ -61,7 +61,7 @@ function computeSectionCompletude(sectionId: SectionId, bilan: BilanData): numbe
 function ringColor(completude: number): string {
   if (completude === 100) return '#5A9E6F'
   if (completude >= 50) return '#9C7A4E'
-  return '#B0A898'
+  return '#C4B8A6'
 }
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ReactNode }[] = [
@@ -75,6 +75,8 @@ const SECTIONS: { id: SectionId; label: string; icon: React.ReactNode }[] = [
   { id: 'objectifs',     label: 'Objectifs',           icon: <Target size={15} /> },
 ]
 
+// Sidebar claire — surface chaude accordée à la page (crème), pour éviter la
+// fracture d'un bloc sombre. Accent or pour la section active.
 export function Sidebar({
   onOpenCabinet,
   onOpenImport,
@@ -86,12 +88,12 @@ export function Sidebar({
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 flex flex-col z-40" style={{
-      backgroundColor: '#1E1C18',
-      borderRight: '1px solid #2E2B25',
+      backgroundColor: '#FFFFFF',
+      borderRight: '1px solid #E8DDD0',
     }}>
 
       {/* Logo */}
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid #2E2B25' }}>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid #E8DDD0' }}>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 flex-shrink-0">
             <Image
@@ -100,14 +102,13 @@ export function Sidebar({
               width={32}
               height={32}
               className="w-8 h-8"
-              style={{ filter: 'brightness(0) invert(1)' }}
             />
           </div>
           <div>
-            <p style={{ color: '#EDE9E0', fontFamily: 'Georgia, serif', fontSize: 14, lineHeight: 1, marginBottom: 3 }}>
+            <p style={{ color: '#1A1410', fontFamily: 'Georgia, serif', fontSize: 14, lineHeight: 1, marginBottom: 3 }}>
               Charlie
             </p>
-            <p style={{ color: '#6B6660', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <p style={{ color: '#9A8B7C', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               Bilan Patrimonial
             </p>
           </div>
@@ -127,16 +128,16 @@ export function Sidebar({
               className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all duration-150"
               style={{
                 borderLeft: `2px solid ${isActive ? '#9C7A4E' : 'transparent'}`,
-                backgroundColor: isActive ? 'rgba(168,135,74,0.10)' : 'transparent',
+                backgroundColor: isActive ? 'rgba(156,122,78,0.12)' : 'transparent',
                 paddingLeft: isActive ? 14 : 16,
               }}
-              onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.04)' }}
+              onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(26,20,16,0.04)' }}
               onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
             >
-              <div style={{ color: isActive ? '#C09F65' : '#5A5650', flexShrink: 0 }}>
+              <div style={{ color: isActive ? '#9C7A4E' : '#9A8B7C', flexShrink: 0 }}>
                 {section.icon}
               </div>
-              <span className="flex-1 text-sm font-medium truncate" style={{ color: isActive ? '#EDE9E0' : '#8A8680' }}>
+              <span className="flex-1 text-sm font-medium truncate" style={{ color: isActive ? '#1A1410' : '#7A6B5E' }}>
                 {section.label}
               </span>
               <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 30, height: 30 }}>
@@ -151,14 +152,14 @@ export function Sidebar({
       </nav>
 
       {/* Actions */}
-      <div className="px-4 py-3 space-y-1.5" style={{ borderTop: '1px solid #2E2B25' }}>
+      <div className="px-4 py-3 space-y-1.5" style={{ borderTop: '1px solid #E8DDD0' }}>
         {/* Import client */}
         <button
           onClick={onOpenImport}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
-          style={{ color: '#C09F65', backgroundColor: 'rgba(168,135,74,0.08)' }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(168,135,74,0.15)')}
-          onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'rgba(168,135,74,0.08)')}
+          style={{ color: '#7D6140', backgroundColor: 'rgba(156,122,78,0.10)' }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(156,122,78,0.18)')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'rgba(156,122,78,0.10)')}
         >
           <Upload size={13} />
           <span>Importer un client</span>
@@ -167,9 +168,9 @@ export function Sidebar({
         <button
           onClick={onOpenCabinet}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
-          style={{ color: '#6B6660' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#8A8680'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.04)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#6B6660'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
+          style={{ color: '#7A6B5E' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#3A2F26'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(26,20,16,0.04)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#7A6B5E'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
         >
           <Settings size={13} />
           <span>Paramètres cabinet</span>

@@ -33,17 +33,17 @@ export function CabinetModal({ isOpen, onClose }: CabinetModalProps) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+        className="fixed inset-0 bg-ink-950/25 backdrop-blur-[2px] z-50"
         onClick={onClose}
       />
 
-      {/* Modal */}
-      <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-surface-1 z-50 flex flex-col shadow-2xl">
+      {/* Modal — panneau flottant, ancré dans la page (arrondi, marge, ombre douce) */}
+      <div className="fixed inset-3 sm:inset-y-4 sm:left-auto sm:right-4 sm:w-full sm:max-w-lg bg-surface-1 z-50 flex flex-col rounded-2xl border border-ink-100 shadow-[0_24px_60px_-12px_rgba(26,20,16,0.30)] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-ink-100">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-navy-50 flex items-center justify-center">
-              <Building size={16} className="text-navy-600" />
+            <div className="w-8 h-8 rounded-lg bg-gold-500/15 flex items-center justify-center">
+              <Building size={16} className="text-gold-600" />
             </div>
             <div>
               <h2 className="font-serif text-lg text-ink-950">Paramètres cabinet</h2>
@@ -75,7 +75,7 @@ export function CabinetModal({ isOpen, onClose }: CabinetModalProps) {
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="text-xs text-navy-600 hover:text-navy-800 transition-colors"
+                    className="text-xs text-gold-600 hover:text-gold-500 transition-colors"
                   >
                     Changer le logo
                   </button>
@@ -90,7 +90,7 @@ export function CabinetModal({ isOpen, onClose }: CabinetModalProps) {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-20 rounded-xl border-2 border-dashed border-ink-200 flex flex-col items-center justify-center gap-1.5 text-ink-400 hover:border-navy-600 hover:text-navy-600 transition-colors"
+                className="w-full h-20 rounded-xl border-2 border-dashed border-ink-200 flex flex-col items-center justify-center gap-1.5 text-ink-400 hover:border-gold-500 hover:text-gold-600 transition-colors"
               >
                 <Upload size={18} />
                 <span className="text-xs">Cliquez pour uploader votre logo (PNG, JPG, SVG)</span>
@@ -186,7 +186,7 @@ export function CabinetModal({ isOpen, onClose }: CabinetModalProps) {
           </button>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl text-sm font-medium bg-navy-900 text-white hover:bg-navy-800 transition-colors"
+            className="px-5 py-2 rounded-xl text-sm font-medium bg-gold-500 text-white hover:bg-gold-600 transition-colors"
           >
             Enregistrer
           </button>
