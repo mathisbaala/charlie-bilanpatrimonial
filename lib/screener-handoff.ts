@@ -3,7 +3,7 @@
 // vers le screener. Utilisé par le CTA « Continuer vers le Screener » et par la
 // redirection automatique après téléchargement du PDF.
 
-import type { BilanData, BilanCalculations } from './types'
+import type { BilanData, BilanCalculations, CabinetConfig } from './types'
 import { bilanIsReadyForScreener, buildClientSummary } from './dossier-mapping'
 import {
   buildDeepLink,
@@ -16,13 +16,14 @@ import {
 type HandoffArgs = {
   bilan: BilanData
   calculations: BilanCalculations
+  cabinet: CabinetConfig
   montant: number
 }
 
 // Ne résout jamais : en cas de succès, la page navigue vers le screener.
 // Lève une erreur lisible si le bilan est incomplet, l'URL non configurée,
 // ou si l'API dossier échoue.
-export async function goToScreener({ bilan, calculations, montant }: HandoffArgs): Promise<never> {
+export async function goToScreener({ bilan, calculations, cabinet, montant }: HandoffArgs): Promise<never> {
   const readiness = bilanIsReadyForScreener(bilan)
   if (!readiness.ready) {
     throw new Error(`Complétez d'abord : ${readiness.missing.join(', ')}.`)
@@ -37,6 +38,7 @@ export async function goToScreener({ bilan, calculations, montant }: HandoffArgs
   const created = await createDossier({
     bilan: { bilanData: bilan, calculations },
     client_summary: summary,
+    cabinet,
     steps_completed: ['bilan'],
   })
   storeDossierRef(created.dossier_id, created.access_token)

@@ -1,4 +1,4 @@
-import type { ObjectifPatrimonial, ParametresCabinet, BilanData } from './types'
+import type { ObjectifPatrimonial, CabinetConfig, BilanData } from './types'
 
 export const OBJECTIFS_DEFAUT: Omit<ObjectifPatrimonial, 'selected' | 'priorite' | 'montantCible' | 'delaiCible'>[] = [
   { id: 'retraite', libelle: 'Préparer la retraite' },
@@ -11,16 +11,27 @@ export const OBJECTIFS_DEFAUT: Omit<ObjectifPatrimonial, 'selected' | 'priorite'
   { id: 'etudes', libelle: "Financer les études des enfants" },
 ]
 
-export const PARAMETRES_CABINET_DEFAUT: ParametresCabinet = {
-  nomCabinet: '',
-  nomConseiller: '',
+export const PARAMETRES_CABINET_DEFAUT: CabinetConfig = {
+  nom: '',
+  logo: '',
+  couleurPrincipale: '#9C7A4E',
+  couleurSecondaire: '#C4A882',
+  police: 'DM Sans',
   prenomConseiller: '',
-  numeroOrias: '',
+  nomConseiller: '',
+  fonction: '',
   adresse: '',
   telephone: '',
   email: '',
-  logo: '',
-  mentionsLegales: 'Ce document est établi à titre informatif. Il ne constitue pas un conseil en investissement au sens de la réglementation MIF2.',
+  siteWeb: '',
+  orias: '',
+  categorieOrias: 'Conseiller en Investissements Financiers (CIF)',
+  associationAgreee: '',
+  autoriteControle: 'AMF',
+  statutConseil: 'non_independant',
+  mediateur: "Médiateur de l'AMF — 17 place de la Bourse, 75082 Paris Cedex 02 — www.amf-france.org",
+  honorairesConseil: '',
+  mentionsLegalesPerso: 'Ce document est établi à titre informatif. Il ne constitue pas un conseil en investissement au sens de la réglementation MIF2.',
 }
 
 export function createBilanVide(): BilanData {

@@ -239,19 +239,8 @@ export interface ObjectifsSection {
   recommandations: string
 }
 
-// Paramètres Cabinet
-export interface ParametresCabinet {
-  nomCabinet: string
-  nomConseiller: string
-  prenomConseiller: string
-  fonction?: string                    // titre du conseiller (ex: CGP)
-  numeroOrias: string
-  adresse: string
-  telephone: string
-  email: string
-  logo: string
-  mentionsLegales: string
-}
+// Paramètres Cabinet — type pivot partagé sur tout le parcours Charlie.
+export type { CabinetConfig } from './charlie-dossier'
 
 // The complete bilan data structure
 export interface BilanData {

@@ -36,6 +36,31 @@ export type ClientSummary = {
 // Selection_fonds is unknown to the Bilan app — it never reads it.
 export type SelectionFonds = unknown
 
+// Identité du cabinet CGP — saisie une fois, conservée sur tout le parcours
+// bilan → screener → proposition.
+export type CabinetConfig = {
+  nom: string
+  logo: string
+  couleurPrincipale: string
+  couleurSecondaire: string
+  police: string
+  adresse: string
+  telephone: string
+  email: string
+  siteWeb: string
+  orias: string
+  mentionsLegalesPerso: string
+  categorieOrias?: string
+  associationAgreee?: string
+  autoriteControle?: string
+  statutConseil?: 'independant' | 'non_independant'
+  mediateur?: string
+  honorairesConseil?: string
+  prenomConseiller?: string
+  nomConseiller?: string
+  fonction?: string
+}
+
 export type CharlieDossier = {
   schema_version: typeof CHARLIE_DOSSIER_SCHEMA_VERSION
   dossier_id: string
@@ -44,6 +69,7 @@ export type CharlieDossier = {
   updated_at: string
   bilan?: BilanSnapshot
   client_summary?: ClientSummary
+  cabinet?: CabinetConfig
   selection_fonds?: SelectionFonds
   proposition?: unknown
 }

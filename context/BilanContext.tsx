@@ -4,7 +4,7 @@ import React, { createContext, useContext, useReducer, useEffect, useState } fro
 import type {
   BilanData,
   BilanCalculations,
-  ParametresCabinet,
+  CabinetConfig,
   Identite,
   SituationFamiliale,
   Actif,
@@ -94,6 +94,24 @@ function migrateData(stored: Partial<BilanData>): BilanData {
 }
 const STORAGE_KEY_CABINET = 'charlie_cabinet_params'
 
+// Fusionne le cabinet stocké avec les défauts et migre les anciens noms de
+// champs (nomCabinet/numeroOrias/mentionsLegales) vers le modèle pivot unifié.
+function migrateCabinet(stored: Record<string, unknown>): CabinetConfig {
+  const s = stored as Partial<CabinetConfig> & {
+    nomCabinet?: string
+    numeroOrias?: string
+    mentionsLegales?: string
+  }
+  return {
+    ...PARAMETRES_CABINET_DEFAUT,
+    ...s,
+    nom: s.nom ?? s.nomCabinet ?? PARAMETRES_CABINET_DEFAUT.nom,
+    orias: s.orias ?? s.numeroOrias ?? PARAMETRES_CABINET_DEFAUT.orias,
+    mentionsLegalesPerso:
+      s.mentionsLegalesPerso ?? s.mentionsLegales ?? PARAMETRES_CABINET_DEFAUT.mentionsLegalesPerso,
+  }
+}
+
 export type SectionId =
   | 'identite'
   | 'familiale'
@@ -148,7 +166,7 @@ function bilanReducer(state: BilanData, action: BilanAction): BilanData {
 interface BilanContextValue {
   bilan: BilanData
   calculations: BilanCalculations
-  cabinet: ParametresCabinet
+  cabinet: CabinetConfig
   activeSection: SectionId
   setActiveSection: (section: SectionId) => void
   updateIdentite: (data: Partial<Identite>) => void
@@ -159,7 +177,7 @@ interface BilanContextValue {
   updateFiscalite: (data: Partial<Fiscalite>) => void
   updateProfilRisque: (data: Partial<ProfilRisque>) => void
   updateObjectifs: (data: Partial<ObjectifsSection>) => void
-  updateCabinet: (data: Partial<ParametresCabinet>) => void
+  updateCabinet: (data: Partial<CabinetConfig>) => void
   resetBilan: () => void
 }
 
@@ -167,7 +185,7 @@ const BilanContext = createContext<BilanContextValue | null>(null)
 
 export function BilanProvider({ children }: { children: React.ReactNode }) {
   const [bilan, dispatch] = useReducer(bilanReducer, createBilanVide())
-  const [cabinet, setCabinet] = useState<ParametresCabinet>(PARAMETRES_CABINET_DEFAUT)
+  const [cabinet, setCabinet] = useState<CabinetConfig>(PARAMETRES_CABINET_DEFAUT)
   const [activeSection, setActiveSection] = useState<SectionId>('identite')
   const [hydrated, setHydrated] = useState(false)
 
@@ -180,7 +198,7 @@ export function BilanProvider({ children }: { children: React.ReactNode }) {
       }
       const savedCabinet = localStorage.getItem(STORAGE_KEY_CABINET)
       if (savedCabinet) {
-        setCabinet(JSON.parse(savedCabinet))
+        setCabinet(migrateCabinet(JSON.parse(savedCabinet)))
       }
     } catch (e) {
       console.error('Failed to load from localStorage', e)

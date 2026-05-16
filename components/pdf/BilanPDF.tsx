@@ -2,7 +2,7 @@ import React from 'react'
 import {
   Document, Page, Text, View, StyleSheet, Image, Svg, Circle, Path,
 } from '@react-pdf/renderer'
-import type { BilanData, ParametresCabinet, BilanCalculations } from '@/lib/types'
+import type { BilanData, CabinetConfig, BilanCalculations } from '@/lib/types'
 
 // ─── Formatage ────────────────────────────────────────────────────────────────
 const fmtEur = (n: number): string => {
@@ -198,11 +198,11 @@ function arcPath(cx: number, cy: number, r: number, start: number, end: number):
 
 // ─── En-tête de page interne ─────────────────────────────────────────────────
 function PageHeader({ cabinet, clientName, docTitle }: {
-  cabinet: ParametresCabinet
+  cabinet: CabinetConfig
   clientName: string
   docTitle: string
 }) {
-  const nomCabinet = (cabinet.nomCabinet || 'Charlie').toUpperCase()
+  const nomCabinet = (cabinet.nom || 'Charlie').toUpperCase()
   const ref = `${nomCabinet.slice(0, 3)}-${(clientName.split(' ').pop() || 'XX').slice(0, 2).toUpperCase()}-BIL-${new Date().getFullYear()}`
   return (
     <View style={s.pageHeader}>
@@ -226,8 +226,8 @@ function PageHeader({ cabinet, clientName, docTitle }: {
 }
 
 // ─── Pied de page (chaque page) ──────────────────────────────────────────────
-function PageFooter({ cabinet }: { cabinet: ParametresCabinet }) {
-  const nomCabinet = (cabinet.nomCabinet || 'Charlie').toUpperCase()
+function PageFooter({ cabinet }: { cabinet: CabinetConfig }) {
+  const nomCabinet = (cabinet.nom || 'Charlie').toUpperCase()
   return (
     <View style={{
       marginTop: 'auto',
@@ -265,12 +265,12 @@ function SectionHeading({ num, slug, title, subtitle }: {
 }
 
 // ─── Page de garde ────────────────────────────────────────────────────────────
-function CoverPage({ bilan, cabinet }: { bilan: BilanData; cabinet: ParametresCabinet }) {
+function CoverPage({ bilan, cabinet }: { bilan: BilanData; cabinet: CabinetConfig }) {
   const clientName = [bilan.identite.civilite, bilan.identite.prenom, bilan.identite.nom]
     .filter(Boolean).join(' ') || 'Client'
   const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
   const conseiller = [cabinet.prenomConseiller, cabinet.nomConseiller].filter(Boolean).join(' ')
-  const nomCabinet = (cabinet.nomCabinet || 'Charlie').toUpperCase()
+  const nomCabinet = (cabinet.nom || 'Charlie').toUpperCase()
   const ref = `${nomCabinet.slice(0, 3)}-${(bilan.identite.nom || 'XX').slice(0, 2).toUpperCase()}-BIL-${new Date().getFullYear()}`
 
   return (
@@ -344,9 +344,9 @@ function CoverPage({ bilan, cabinet }: { bilan: BilanData; cabinet: ParametresCa
           <View style={{ gap: 3 }}>
             <Text style={{ fontSize: 7.5, color: C.INK_LIGHT }}>Référence : {ref}</Text>
             <Text style={{ fontSize: 7.5, color: C.INK_LIGHT }}>Date d’estimation : {dateStr}</Text>
-            {cabinet.numeroOrias ? (
+            {cabinet.orias ? (
               <Text style={{ fontSize: 7.5, color: C.INK_LIGHT }}>
-                Immatriculé ORIAS n° {cabinet.numeroOrias}
+                Immatriculé ORIAS n° {cabinet.orias}
               </Text>
             ) : null}
           </View>
@@ -363,7 +363,7 @@ function CoverPage({ bilan, cabinet }: { bilan: BilanData; cabinet: ParametresCa
 }
 
 // ─── Identité & Situation familiale ──────────────────────────────────────────
-function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: ParametresCabinet }) {
+function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: CabinetConfig }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
   const ident = bilan.identite
   const fam = bilan.situationFamiliale
@@ -489,7 +489,7 @@ function IdentitePage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
 }
 
 // ─── Synthèse patrimoniale ────────────────────────────────────────────────────
-function SynthesePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
+function SynthesePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: CabinetConfig }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
 
   // Donut chart
@@ -622,7 +622,7 @@ function SynthesePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanC
 }
 
 // ─── Inventaire détaillé des actifs ──────────────────────────────────────────
-function InventairePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
+function InventairePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: CabinetConfig }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
 
   return (
@@ -804,7 +804,7 @@ function InventairePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: Bila
 }
 
 // ─── Revenus & Charges ────────────────────────────────────────────────────────
-function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
+function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: CabinetConfig }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
   const r = bilan.revenusCharges.revenus
   const c = bilan.revenusCharges.charges
@@ -911,7 +911,7 @@ function RevenusPage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCa
 }
 
 // ─── Analyse fiscale & succession ────────────────────────────────────────────
-function FiscalitePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: ParametresCabinet }) {
+function FiscalitePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: BilanCalculations; cabinet: CabinetConfig }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
   const f = bilan.fiscalite
 
@@ -1000,7 +1000,7 @@ function FiscalitePage({ bilan, calc, cabinet }: { bilan: BilanData; calc: Bilan
 }
 
 // ─── Profil de risque MIF2 & Objectifs ───────────────────────────────────────
-function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: ParametresCabinet }) {
+function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: CabinetConfig }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
   const pr = bilan.profilRisque
   const objectifsSelected = bilan.objectifs.objectifs.filter(o => o.selected)
@@ -1128,12 +1128,12 @@ function ProfilObjectifsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Pa
 }
 
 // ─── Mentions légales & signature ─────────────────────────────────────────────
-function MentionsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: ParametresCabinet }) {
+function MentionsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: CabinetConfig }) {
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ') || 'Client'
   const clientFull = [bilan.identite.civilite, bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ')
   const conseiller = [cabinet.prenomConseiller, cabinet.nomConseiller].filter(Boolean).join(' ')
   const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-  const nomCabinet = cabinet.nomCabinet || 'Charlie'
+  const nomCabinet = cabinet.nom || 'Charlie'
 
   return (
     <Page size="A4" style={s.page}>
@@ -1158,15 +1158,15 @@ function MentionsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
           <Text style={{ fontFamily: 'Helvetica-Bold' }}>{clientFull}</Text>
           {` et ne peut être transmis à des tiers sans autorisation préalable écrite de ${nomCabinet}.`}
         </Text>
-        {cabinet.numeroOrias ? (
+        {cabinet.orias ? (
           <Text style={{ fontSize: 9, color: C.INK_MED, lineHeight: 1.7, marginBottom: 10 }}>
             {`${nomCabinet} — Conseiller en Gestion de Patrimoine immatriculé à l’ORIAS sous le numéro `}
-            <Text style={{ fontFamily: 'Helvetica-Bold' }}>{cabinet.numeroOrias}</Text>
+            <Text style={{ fontFamily: 'Helvetica-Bold' }}>{cabinet.orias}</Text>
             {` (www.orias.fr).`}
           </Text>
         ) : null}
         <Text style={{ fontSize: 9, color: C.INK_MED, lineHeight: 1.7 }}>
-          {cabinet.mentionsLegales ||
+          {cabinet.mentionsLegalesPerso ||
             'Les informations contenues dans ce document sont fournies à titre indicatif. Elles ne constituent pas un conseil en investissement au sens de la directive MIF 2. Les performances passées ne préjugent pas des performances futures.'}
         </Text>
       </View>
@@ -1210,7 +1210,7 @@ function MentionsPage({ bilan, cabinet }: { bilan: BilanData; cabinet: Parametre
 // ─── Document principal ───────────────────────────────────────────────────────
 export interface BilanPDFProps {
   bilan: BilanData
-  cabinet: ParametresCabinet
+  cabinet: CabinetConfig
   calculations: BilanCalculations
 }
 
@@ -1219,7 +1219,7 @@ export function BilanPDF({ bilan, cabinet, calculations }: BilanPDFProps) {
   return (
     <Document
       title={`Bilan Patrimonial — ${nomClient}`}
-      author={cabinet.nomCabinet || 'Charlie'}
+      author={cabinet.nom || 'Charlie'}
       creator="Charlie Bilan Patrimonial"
       language="fr"
     >

@@ -7,7 +7,7 @@ import { bilanIsReadyForScreener } from '@/lib/dossier-mapping'
 import { goToScreener, formatHandoffError } from '@/lib/screener-handoff'
 
 export function ContinueToScreenerButton() {
-  const { bilan, calculations } = useBilan()
+  const { bilan, calculations, cabinet } = useBilan()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,7 +18,7 @@ export function ContinueToScreenerButton() {
     setSubmitting(true)
     setError(null)
     try {
-      await goToScreener({ bilan, calculations, montant: suggestedAmount })
+      await goToScreener({ bilan, calculations, cabinet, montant: suggestedAmount })
     } catch (err) {
       setError(formatHandoffError(err))
       setSubmitting(false)

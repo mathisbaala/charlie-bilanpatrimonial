@@ -83,7 +83,7 @@ export function PDFButtonInner() {
       const montant = Math.round(Math.max(0, (calculations.totalActifFinancier || 0) * 0.2))
       // Court délai pour laisser le téléchargement démarrer avant la navigation.
       setTimeout(() => {
-        goToScreener({ bilan, calculations, montant }).catch((err) => {
+        goToScreener({ bilan, calculations, cabinet, montant }).catch((err) => {
           setHandoffError(formatHandoffError(err))
         })
       }, 600)

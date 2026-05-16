@@ -109,32 +109,79 @@ export function CabinetModal({ isOpen, onClose }: CabinetModalProps) {
           <div className="space-y-4">
             <InputField
               label="Nom du cabinet"
-              value={cabinet.nomCabinet}
-              onChange={(v) => updateCabinet({ nomCabinet: v })}
+              value={cabinet.nom}
+              onChange={(v) => updateCabinet({ nom: v })}
               placeholder="Cabinet Dupont Patrimoine"
             />
             <div className="grid grid-cols-2 gap-4">
               <InputField
                 label="Prénom du conseiller"
-                value={cabinet.prenomConseiller}
+                value={cabinet.prenomConseiller ?? ''}
                 onChange={(v) => updateCabinet({ prenomConseiller: v })}
                 placeholder="Jean"
               />
               <InputField
                 label="Nom du conseiller"
-                value={cabinet.nomConseiller}
+                value={cabinet.nomConseiller ?? ''}
                 onChange={(v) => updateCabinet({ nomConseiller: v })}
                 placeholder="Dupont"
               />
             </div>
             <InputField
+              label="Fonction du conseiller"
+              value={cabinet.fonction ?? ''}
+              onChange={(v) => updateCabinet({ fonction: v })}
+              placeholder="Conseiller en gestion de patrimoine"
+            />
+            <InputField
               label="Numéro ORIAS"
-              value={cabinet.numeroOrias}
-              onChange={(v) => updateCabinet({ numeroOrias: v })}
+              value={cabinet.orias}
+              onChange={(v) => updateCabinet({ orias: v })}
               placeholder="12 345 678"
               hint="Numéro d'immatriculation obligatoire (ORIAS)"
               required
             />
+          </div>
+
+          {/* Identité visuelle */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-medium text-ink-600 uppercase tracking-wider">Identité visuelle</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-ink-600 block mb-1.5">Couleur principale</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={cabinet.couleurPrincipale}
+                    onChange={(e) => updateCabinet({ couleurPrincipale: e.target.value })}
+                    className="h-9 w-12 rounded-lg border border-ink-200 cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={cabinet.couleurPrincipale}
+                    onChange={(e) => updateCabinet({ couleurPrincipale: e.target.value })}
+                    className="flex-1 min-w-0 px-3 py-2 border border-ink-200 rounded-lg text-ink-950 font-mono text-xs"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-ink-600 block mb-1.5">Couleur secondaire</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={cabinet.couleurSecondaire}
+                    onChange={(e) => updateCabinet({ couleurSecondaire: e.target.value })}
+                    className="h-9 w-12 rounded-lg border border-ink-200 cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={cabinet.couleurSecondaire}
+                    onChange={(e) => updateCabinet({ couleurSecondaire: e.target.value })}
+                    className="flex-1 min-w-0 px-3 py-2 border border-ink-200 rounded-lg text-ink-950 font-mono text-xs"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Contact */}
@@ -162,14 +209,88 @@ export function CabinetModal({ isOpen, onClose }: CabinetModalProps) {
                 type="email"
               />
             </div>
+            <InputField
+              label="Site internet"
+              value={cabinet.siteWeb}
+              onChange={(v) => updateCabinet({ siteWeb: v })}
+              placeholder="www.cabinet.fr"
+            />
+          </div>
+
+          {/* Mentions réglementaires */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-xs font-medium text-ink-600 uppercase tracking-wider">Mentions réglementaires</h3>
+              <p className="mt-1 text-xs text-ink-400">Reprises dans les documents générés sur tout le parcours.</p>
+            </div>
+            <InputField
+              label="Catégorie ORIAS"
+              value={cabinet.categorieOrias ?? ''}
+              onChange={(v) => updateCabinet({ categorieOrias: v })}
+              placeholder="Conseiller en Investissements Financiers (CIF)"
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                label="Association agréée"
+                value={cabinet.associationAgreee ?? ''}
+                onChange={(v) => updateCabinet({ associationAgreee: v })}
+                placeholder="CNCGP / ANACOFI-CIF…"
+              />
+              <InputField
+                label="Autorité de contrôle"
+                value={cabinet.autoriteControle ?? ''}
+                onChange={(v) => updateCabinet({ autoriteControle: v })}
+                placeholder="AMF"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-ink-600 block mb-1.5">Indépendance du conseil (MIF2)</label>
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { value: 'non_independant' as const, label: 'Non indépendant' },
+                  { value: 'independant' as const, label: 'Indépendant' },
+                ]).map((opt) => {
+                  const active = (cabinet.statutConseil ?? 'non_independant') === opt.value
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => updateCabinet({ statutConseil: opt.value })}
+                      className={`px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
+                        active
+                          ? 'border-gold-500 bg-gold-500/8 text-gold-600'
+                          : 'border-ink-100 text-ink-600 hover:border-ink-200'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            <TextareaField
+              label="Rémunération du cabinet"
+              value={cabinet.honorairesConseil ?? ''}
+              onChange={(v) => updateCabinet({ honorairesConseil: v })}
+              rows={2}
+              placeholder="Honoraires de conseil / rétrocessions de commissions…"
+            />
+            <TextareaField
+              label="Médiateur"
+              value={cabinet.mediateur ?? ''}
+              onChange={(v) => updateCabinet({ mediateur: v })}
+              rows={2}
+              placeholder="Nom et coordonnées du médiateur compétent"
+            />
           </div>
 
           {/* Legal */}
           <div>
             <TextareaField
               label="Mentions légales personnalisées"
-              value={cabinet.mentionsLegales}
-              onChange={(v) => updateCabinet({ mentionsLegales: v })}
+              value={cabinet.mentionsLegalesPerso}
+              onChange={(v) => updateCabinet({ mentionsLegalesPerso: v })}
               rows={4}
               hint="Ces mentions apparaîtront sur la dernière page du PDF"
             />
