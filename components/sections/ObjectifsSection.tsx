@@ -223,14 +223,14 @@ function NextStepCard() {
   const profil = bilan.profilRisque.resultat ? PROFIL_LABEL[bilan.profilRisque.resultat] : ''
 
   return (
-    <div className="mt-4 rounded-2xl border border-gold-400/40 bg-gold-100/50 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-      <div>
-        <p className="font-serif text-xl text-ink-950">
+    <div className="mt-4 rounded-2xl border border-gold-400/40 bg-gold-100/50 px-7 py-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+      <div className="max-w-md">
+        <p className="font-serif text-2xl leading-snug tracking-tight text-ink-950">
           {readiness.ready ? `Le profil de ${prenom} est prêt` : 'Plus qu’une étape'}
         </p>
-        <p className="mt-1 text-sm text-ink-600 max-w-md">
+        <p className="mt-2.5 text-sm leading-relaxed text-ink-600">
           {readiness.ready
-            ? `Charlie a converti le bilan en sélection de fonds. Ouvrez le screener — les filtres et la recherche sont déjà calibrés sur son profil ${profil}.`
+            ? `Charlie a converti le bilan en sélection de fonds. Les filtres et la recherche du screener sont déjà calibrés sur son profil ${profil}.`
             : `Complétez d'abord : ${readiness.missing.join(', ')}.`}
         </p>
       </div>
