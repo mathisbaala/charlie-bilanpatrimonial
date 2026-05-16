@@ -30,6 +30,7 @@ export type ClientSummary = {
   enveloppesEligibles: EnveloppeFiscale[]
   preferencesESG: boolean
   classificationMifid: 'professionnel' | 'non_professionnel'
+  promptScreener?: string  // prompt langage-naturel pré-rempli dans la barre du screener
 }
 
 // Selection_fonds is unknown to the Bilan app — it never reads it.

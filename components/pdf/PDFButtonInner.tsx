@@ -4,8 +4,10 @@ import { PDFDownloadLink } from '@react-pdf/renderer'
 import { useBilan } from '@/context/BilanContext'
 import { FileText, Loader } from 'lucide-react'
 import { BilanPDF } from './BilanPDF'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import type { BilanData, BilanCalculations } from '@/lib/types'
+import { bilanIsReadyForScreener } from '@/lib/dossier-mapping'
+import { goToScreener, formatHandoffError } from '@/lib/screener-handoff'
 
 function computeAlerts(bilan: BilanData, calculations: BilanCalculations) {
   const blocking: string[] = []
@@ -39,29 +41,52 @@ function computeAlerts(bilan: BilanData, calculations: BilanCalculations) {
 export function PDFButtonInner() {
   const { bilan, cabinet, calculations } = useBilan()
   const [showModal, setShowModal] = useState(false)
-  const [readyToGenerate, setReadyToGenerate] = useState(false)
-  const downloadLinkRef = useRef<HTMLAnchorElement | null>(null)
+  const [generating, setGenerating] = useState(false)
+  const [handoffError, setHandoffError] = useState<string | null>(null)
+  const handledUrlRef = useRef<string | null>(null)
 
   const clientName = [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join('_') || 'Client'
   const fileName = `Bilan_Patrimonial_${clientName}_${new Date().toISOString().slice(0, 10)}.pdf`
-
-  // Auto-click the download link once ready
-  useEffect(() => {
-    if (readyToGenerate && downloadLinkRef.current) {
-      const timer = setTimeout(() => {
-        downloadLinkRef.current?.click()
-        setReadyToGenerate(false)
-      }, 300)
-      return () => clearTimeout(timer)
-    }
-  }, [readyToGenerate])
 
   function handleButtonClick() {
     const alerts = computeAlerts(bilan, calculations)
     if (alerts.blocking.length > 0 || alerts.warnings.length > 0) {
       setShowModal(true)
     } else {
-      setReadyToGenerate(true)
+      startGeneration()
+    }
+  }
+
+  function startGeneration() {
+    handledUrlRef.current = null
+    setHandoffError(null)
+    setGenerating(true)
+  }
+
+  // Déclenché une seule fois quand le blob PDF est prêt : télécharge le fichier,
+  // puis — si le bilan est complet — enchaîne sur le screener (handoff Charlie).
+  function onPdfReady(url: string) {
+    if (handledUrlRef.current === url) return
+    handledUrlRef.current = url
+
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    a.rel = 'noopener'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+
+    setGenerating(false)
+
+    if (bilanIsReadyForScreener(bilan).ready) {
+      const montant = Math.round(Math.max(0, (calculations.totalActifFinancier || 0) * 0.2))
+      // Court délai pour laisser le téléchargement démarrer avant la navigation.
+      setTimeout(() => {
+        goToScreener({ bilan, calculations, montant }).catch((err) => {
+          setHandoffError(formatHandoffError(err))
+        })
+      }, 600)
     }
   }
 
@@ -70,7 +95,7 @@ export function PDFButtonInner() {
   return (
     <>
       {/* Main trigger button */}
-      {!readyToGenerate && (
+      {!generating && (
         <button
           onClick={handleButtonClick}
           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-white hover:opacity-90 shadow-sm"
@@ -81,42 +106,33 @@ export function PDFButtonInner() {
         </button>
       )}
 
-      {/* Hidden PDF download link — rendered when readyToGenerate */}
-      {readyToGenerate && (
+      {/* Génère le blob PDF puis déclenche téléchargement + handoff via onPdfReady */}
+      {generating && (
         <PDFDownloadLink
           document={<BilanPDF bilan={bilan} cabinet={cabinet} calculations={calculations} />}
           fileName={fileName}
         >
-          {({ loading, error }: { loading: boolean; error: Error | null }) => (
-            <button
-              ref={(el) => {
-                if (el && !loading) {
-                  downloadLinkRef.current = el.closest('a') as HTMLAnchorElement
-                }
-              }}
-              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
-                loading
-                  ? 'bg-white/10 text-white/50 cursor-wait'
-                  : 'text-white hover:opacity-90 shadow-sm'
-              }`}
-              style={loading ? {} : { backgroundColor: '#9C7A4E' }}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader size={14} className="animate-spin" />
-                  <span>Génération...</span>
-                </>
-              ) : (
-                <>
-                  <FileText size={14} />
-                  <span>Télécharger le PDF</span>
-                </>
-              )}
-              {error && <span className="text-red-500 text-xs">Erreur PDF</span>}
-            </button>
-          )}
+          {({ loading, url, error }) => {
+            if (!loading && url && !error) {
+              // Effet de bord hors phase de rendu.
+              queueMicrotask(() => onPdfReady(url))
+            }
+            return (
+              <button
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-white/60 bg-white/10 cursor-wait"
+                disabled
+              >
+                <Loader size={14} className="animate-spin" />
+                <span>Génération…</span>
+                {error && <span className="text-red-500 text-xs">Erreur PDF</span>}
+              </button>
+            )
+          }}
         </PDFDownloadLink>
+      )}
+
+      {handoffError && (
+        <p className="mt-2 text-xs text-neg-600">{handoffError}</p>
       )}
 
       {/* Validation modal */}
@@ -159,7 +175,7 @@ export function PDFButtonInner() {
                 Retourner corriger
               </button>
               <button
-                onClick={() => { setShowModal(false); setReadyToGenerate(true) }}
+                onClick={() => { setShowModal(false); startGeneration() }}
                 className="flex-1 px-4 py-2 bg-navy text-white rounded-xl text-sm font-medium hover:bg-navy/90"
               >
                 Générer quand même

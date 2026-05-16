@@ -209,19 +209,28 @@ export function ObjectifsSection() {
 
 // CTA de fin de parcours : une fois le bilan complet, le conseiller passe
 // au screener pour sélectionner les fonds adaptés au profil du client.
+const PROFIL_LABEL: Record<string, string> = {
+  prudent: 'prudent',
+  equilibre: 'équilibré',
+  dynamique: 'dynamique',
+  offensif: 'offensif',
+}
+
 function NextStepCard() {
   const { bilan } = useBilan()
   const readiness = bilanIsReadyForScreener(bilan)
+  const prenom = bilan.identite.prenom?.trim() || 'votre client'
+  const profil = bilan.profilRisque.resultat ? PROFIL_LABEL[bilan.profilRisque.resultat] : ''
 
   return (
-    <div className="rounded-xl border border-navy-200 bg-navy-50/60 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="mt-4 rounded-2xl border border-gold-400/40 bg-gold-100/50 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
       <div>
-        <p className="text-sm font-semibold text-ink-900">
-          Étape suivante — Sélection des fonds
+        <p className="font-serif text-xl text-ink-950">
+          {readiness.ready ? `Le profil de ${prenom} est prêt` : 'Plus qu’une étape'}
         </p>
-        <p className="mt-0.5 text-xs text-ink-500 max-w-md">
+        <p className="mt-1 text-sm text-ink-600 max-w-md">
           {readiness.ready
-            ? 'Le bilan est complet. Transmettez le profil au Screener pour construire une sélection de fonds adaptée.'
+            ? `Charlie a converti le bilan en sélection de fonds. Ouvrez le screener — les filtres et la recherche sont déjà calibrés sur son profil ${profil}.`
             : `Complétez d'abord : ${readiness.missing.join(', ')}.`}
         </p>
       </div>

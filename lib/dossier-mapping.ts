@@ -60,13 +60,42 @@ function normalizeProfilRisque(raw: BilanData['profilRisque']['resultat']): Prof
   return 'equilibre'
 }
 
+const PROFIL_LABEL: Record<ProfilRisqueResultat, string> = {
+  prudent: 'prudent',
+  equilibre: 'équilibré',
+  dynamique: 'dynamique',
+  offensif: 'offensif',
+}
+
+const PROFIL_PHRASE_RISQUE: Record<ProfilRisqueResultat, string> = {
+  prudent: 'Volatilité faible, préservation du capital.',
+  equilibre: 'Volatilité maîtrisée, équilibre rendement/risque.',
+  dynamique:
+    'Recherche de performance, actions internationales majoritaires, volatilité modérée à élevée acceptée.',
+  offensif: 'Recherche de performance maximale, actions, volatilité élevée acceptée.',
+}
+
+// Traduit le client_summary en prompt langage-naturel — destiné à pré-remplir la
+// barre de recherche du screener, dans le style attendu par son interpréteur IA.
+export function buildScreenerPrompt(summary: Omit<ClientSummary, 'promptScreener'>): string {
+  const phraseESG = summary.preferencesESG ? 'Fonds article 8 ou 9 (ISR/ESG). ' : ''
+  const trackRecord = summary.horizonAnnees >= 5 ? 3 : 1
+  return (
+    `Profil ${PROFIL_LABEL[summary.profilRisque]}, horizon ${summary.horizonAnnees} ans. ` +
+    `Objectif : ${summary.objectifPrincipal}. ` +
+    `${PROFIL_PHRASE_RISQUE[summary.profilRisque]} ` +
+    `${phraseESG}` +
+    `Frais contenus, antériorité d'au moins ${trackRecord} ans.`
+  )
+}
+
 export function buildClientSummary(
   bilan: BilanData,
   calculations: BilanCalculations,
   montantAInvestir: number
 ): ClientSummary {
   const horizonKey = (bilan.profilRisque.horizon || 'plus_5ans') as HorizonInvestissement
-  return {
+  const summary: Omit<ClientSummary, 'promptScreener'> = {
     nomComplet: [bilan.identite.prenom, bilan.identite.nom].filter(Boolean).join(' ').trim() || 'Client sans nom',
     age: computeAge(bilan.identite.dateNaissance),
     profilRisque: normalizeProfilRisque(bilan.profilRisque.resultat),
@@ -82,6 +111,7 @@ export function buildClientSummary(
     preferencesESG: !!bilan.objectifs.preferencesESG,
     classificationMifid: normalizeClassificationMifid(bilan.profilRisque.classificationClient),
   }
+  return { ...summary, promptScreener: buildScreenerPrompt(summary) }
 }
 
 // True when the bilan is "complete enough" for the screener handoff.
