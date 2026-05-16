@@ -18,10 +18,29 @@ const STEPS: Step[] = [
 
 const CURRENT_STEP: ParcoursStep = 'bilan'
 
+// Masque le bandeau au scroll vers le bas, le ré-affiche au scroll vers le haut.
+function useAutoHide() {
+  const [hidden, setHidden] = useState(false)
+  useEffect(() => {
+    let lastY = window.scrollY
+    const onScroll = () => {
+      const y = window.scrollY
+      if (y < 24) setHidden(false)
+      else if (y > lastY + 6) setHidden(true)
+      else if (y < lastY - 6) setHidden(false)
+      lastY = y
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  return hidden
+}
+
 export function CharlieParcoursHeader() {
   const [dossierRef, setDossierRef] = useState<{ id: string; token: string } | null>(null)
   const [summary, setSummary] = useState<ClientSummary | null>(null)
   const [stepsCompleted, setStepsCompleted] = useState<ParcoursStep[]>([])
+  const hidden = useAutoHide()
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -47,13 +66,23 @@ export function CharlieParcoursHeader() {
   if (!dossierRef) return null
 
   return (
-    // pl-[17rem] dégage la Sidebar fixe de 16rem.
-    <div className="border-b border-[#E8DDD0] bg-[#F5EFE6]">
-      <div className="pl-[17rem] pr-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <ParcoursIdentite summary={summary} />
-        <ParcoursSteps stepsCompleted={stepsCompleted} />
+    <>
+      {/* Réserve la hauteur du bandeau fixe dans le flux. */}
+      <div aria-hidden className="h-11" />
+      {/* left-64 dégage la Sidebar fixe de 16rem. */}
+      <div
+        className={`fixed top-0 left-64 right-0 z-30 transition-transform duration-300 ease-out ${
+          hidden ? '-translate-y-full' : 'translate-y-0'
+        }`}
+      >
+        <div className="h-11 bg-[#FAF6EF]/85 backdrop-blur-md border-b border-[#E8DDD0]/70 shadow-[0_8px_24px_-16px_rgba(26,20,16,0.35)]">
+          <div className="h-full px-6 flex items-center justify-between gap-3 text-xs">
+            <ParcoursIdentite summary={summary} />
+            <ParcoursSteps stepsCompleted={stepsCompleted} />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
